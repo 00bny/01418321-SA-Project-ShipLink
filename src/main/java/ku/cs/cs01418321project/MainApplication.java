@@ -15,8 +15,8 @@ public class MainApplication extends Application {
 
         FXRouter.bind(this, stage, "ShipLink", 1024, 768);
 
-        //Image image = new Image(getClass().getResource("/images/logo.png").toString());
-        //stage.getIcons().add(image);
+        Image image = new Image(getClass().getResource("/images/Logo.png").toString());
+        stage.getIcons().add(image);
         stage.setResizable(false);
         configRoutes();
         
