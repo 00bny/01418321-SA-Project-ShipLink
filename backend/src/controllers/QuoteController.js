@@ -1,7 +1,7 @@
 const DB = require('../config/DBConnector');
 
 function volumetricKg({ w, h, l }) {
-  const vol = (w * h * l) / 5000;                // สูตรตัวอย่าง
+  const vol = (w * h * l) / 5000;
   return Math.max(vol, 0);
 }
 function calcFor(rate, w, h, l, weight) {
@@ -29,8 +29,7 @@ class QuoteController {
           companyId: c.CompanyID,
           companyName: c.CompanyName,
           shipCostCustomer: shipCost,
-          profit,
-          etaDays: '1 - 2'
+          profit
         };
       });
 

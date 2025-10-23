@@ -1,12 +1,14 @@
-const API = 'http://localhost:5000';
+const API = 'http://localhost:5001';
 
 async function j(res){
   const txt = await res.text();
-  try { return JSON.parse(txt); } catch { return { raw: txt }; }
+  let data;
+  try { data = JSON.parse(txt); } catch { data = { raw: txt }; }
+  return { ok: res.ok, status: res.status, ...data };
 }
 
 export const ApiClient = {
-  // customers
+  // --- เดิม (customers / orders / checkout / quotes) ---
   async searchCustomer(phone){
     const r = await fetch(`${API}/api/customers/search?phone=${encodeURIComponent(phone)}`);
     if (r.status === 404) return null; return j(r);
@@ -19,16 +21,35 @@ export const ApiClient = {
     const r = await fetch(`${API}/api/customers/${encodeURIComponent(phone)}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name, address}) });
     return j(r);
   },
-
-  // quotes & companies
   async getCompanies(){ const r = await fetch(`${API}/api/companies`); return j(r); },
   async getQuotes(payload){ const r = await fetch(`${API}/api/quotes`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }); return j(r); },
-
-  // orders
   async createOrderDraft(payload){
     const r = await fetch(`${API}/api/orders`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
     return j(r);
   },
   async listUnpaid(employeeId){ const r = await fetch(`${API}/api/orders/unpaid?employeeId=${employeeId}`); return j(r); },
-  async payAll(employeeId){ const r = await fetch(`${API}/api/checkout/pay-all`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ employeeId }) }); return j(r); }
+  async payAll(employeeId){ const r = await fetch(`${API}/api/checkout/pay-all`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ employeeId }) }); return j(r); },
+
+  // --- ใหม่ (auth) ---
+  async registerEmployee({ name, phone, password, position, branchId }) {
+    const r = await fetch(`${API}/api/auth/register/employee`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name, phone, password, position, branchId })
+    });
+    return j(r);
+  },
+  async registerCompany({ name, phone, password, shippingRate, sharePercent, walletId }) {
+    const r = await fetch(`${API}/api/auth/register/company`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name, phone, password, shippingRate, sharePercent, walletId })
+    });
+    return j(r);
+  },
+  async login({ role, phone, password }) {
+    const r = await fetch(`${API}/api/auth/login`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ role, phone, password })
+    });
+    return j(r);
+  }
 };

@@ -29,7 +29,8 @@ CREATE TABLE Employee (
   EmployeePassword VARCHAR(255) NOT NULL,
   EmployeePosition ENUM('Manager','Staff') NOT NULL DEFAULT 'Staff',
   BranchID INT NOT NULL,
-  FOREIGN KEY (BranchID) REFERENCES Branch(BranchID)
+  FOREIGN KEY (BranchID) REFERENCES Branch(BranchID),
+  UNIQUE (EmployeePhone)
 );
 
 CREATE TABLE ShippingCompany (
@@ -40,7 +41,8 @@ CREATE TABLE ShippingCompany (
   ShippingRate DECIMAL(10,2) NOT NULL DEFAULT 15.00,
   SharePercent DECIMAL(5,2) NOT NULL DEFAULT 10.00,
   WalletID INT NOT NULL,
-  FOREIGN KEY (WalletID) REFERENCES Wallet(WalletID)
+  FOREIGN KEY (WalletID) REFERENCES Wallet(WalletID),
+  UNIQUE (CompanyPhone)
 );
 
 CREATE TABLE PickupRequest (

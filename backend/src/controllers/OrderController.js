@@ -4,7 +4,6 @@ class OrderController {
   static async createDraft(req, res) {
     try {
       const payload = req.body;
-      // ควร validate จริงจังในงานจริง
       const order = await OrderService.createDraftOrder(payload);
       res.status(201).json(order);
     } catch (e) { res.status(500).json({ message: e.message }); }

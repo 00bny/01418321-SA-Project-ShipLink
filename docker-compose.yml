@@ -36,9 +36,10 @@ services:
       DB_NAME: shiplink_db
     volumes:
       - ./backend:/usr/src/app
+      - ./frontend:/usr/src/app/frontend
       - /usr/src/app/node_modules
     ports:
-      - "5000:5000"
+      - "5001:5001"
     depends_on:
       - db
     command: npm run dev
