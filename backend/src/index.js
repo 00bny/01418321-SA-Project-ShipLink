@@ -25,6 +25,7 @@ app.use('/api/customers', require('./routes/customerRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/checkout', require('./routes/checkoutRoutes'));
 app.use('/api/companies', require('./routes/companyRoutes'));
+app.use('/api/quotes', require('./routes/quoteRoutes'));
 app.use('/api/auth', require('./routes/authRoutes'));
 
 app.use('/api', (req, res, next) => {

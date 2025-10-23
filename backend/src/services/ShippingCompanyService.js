@@ -15,5 +15,9 @@ class ShippingCompanyService {
     const [row] = await DB.query('SELECT * FROM ShippingCompany WHERE CompanyID = ?', [result.insertId]);
     return new ShippingCompany(row);
   }
+
+  static async list() {
+    return DB.query('SELECT CompanyID, CompanyName, ShippingRate, SharePercent FROM ShippingCompany ORDER BY CompanyID');
+  }
 }
 module.exports = ShippingCompanyService;
