@@ -11,9 +11,10 @@
     "dev": "nodemon --watch src --exec \"node src/index.js\""
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
     "express": "^5.1.0",
-    "mysql2": "^3.1.0",
-    "dotenv": "^16.0.0"
+    "mysql2": "^3.1.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

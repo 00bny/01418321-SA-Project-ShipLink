@@ -1,36 +1,19 @@
+require('dotenv').config();
 const express = require('express');
-const db = require('./config/db');
-
+const cors = require('cors');
 const app = express();
+
+app.use(cors());
 app.use(express.json());
 
-app.get('/health', (req, res) => res.send('OK'));
+app.get('/', (_,res)=>res.send('ShipLink API is running'));
 
-app.get('/parcels', async (req, res) => {
-  try {
-    const [rows] = await db.query('SELECT * FROM parcels');
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
-});
+app.use('/api/customers', require('./routes/customerRoutes'));
+app.use('/api/orders', require('./routes/orderRoutes'));
+app.use('/api/checkout', require('./routes/checkoutRoutes'));
+app.use('/api/companies', require('./routes/companyRoutes'));
+app.use('/api/quotes', require('./routes/quoteRoutes'));
+
 
 const PORT = process.env.PORT || 5000;
-
-async function start() {
-  // พยายามเชื่อม DB ก่อน start server (retry)
-  for (let i = 0; i < 10; i++) {
-    try {
-      await db.query('SELECT 1');
-      console.log('Connected to DB');
-      break;
-    } catch (e) {
-      console.log('DB not ready, retry in 3s...');
-      await new Promise(r => setTimeout(r, 3000));
-    }
-  }
-  app.listen(PORT, () => console.log(`Server on ${PORT}`));
-}
-
-start();
+app.listen(PORT, () => console.log(`API on :${PORT}`));
