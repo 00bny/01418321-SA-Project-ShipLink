@@ -2,7 +2,6 @@ DROP DATABASE IF EXISTS shiplink_db;
 CREATE DATABASE shiplink_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE shiplink_db;
 
--- ---- Core Tables ----
 CREATE TABLE Customer (
   CustomerID INT AUTO_INCREMENT PRIMARY KEY,
   CustomerName VARCHAR(255) NOT NULL,
@@ -100,22 +99,21 @@ CREATE TABLE TransactionHist (
 );
 
 -- ---- Seed ----
-INSERT INTO Wallet (Balance) VALUES (1000.00);      -- wallet id 1 (สาขา)
+INSERT INTO Wallet (Balance) VALUES (1000.00);
 INSERT INTO Branch (BranchName, BranchAddress, WalletID)
-VALUES ('Main Branch', '123 Main Rd', 1);           -- branch id 1
+VALUES ('Main Branch', '123 Main Rd', 1);
 
 INSERT INTO Employee (EmployeeName,EmployeePhone,EmployeePassword,EmployeePosition,BranchID)
-VALUES ('Santi','0800000000','hash','Manager',1);  -- employee id 1 (รหัสเดโม่)
+VALUES ('Santi','0800000000','hash','Manager',1);
 
-INSERT INTO Wallet (Balance) VALUES (0.00);         -- wallet id 2 (ของบริษัทขนส่ง)
+INSERT INTO Wallet (Balance) VALUES (0.00);
 INSERT INTO ShippingCompany (CompanyName, CompanyPhone, CompanyPassword, ShippingRate, WalletID)
 VALUES ('TH01','020000000','hash',15.00,2), ('TH0x','020000001','hash',15.00,2);
 
--- ตัวอย่างลูกค้า
 INSERT INTO Customer (CustomerName,CustomerPhone,CustomerAddress)
 VALUES ('Nunthaporn Leryotpornchai','0933329164','123 Bangbuathong Nonthaburi 11110');
 
-INSERT INTO Wallet (Balance) VALUES (0.00);         -- wallet id 2 (ของบริษัท)
+INSERT INTO Wallet (Balance) VALUES (0.00);
 INSERT INTO ShippingCompany (CompanyName, CompanyPhone, CompanyPassword, ShippingRate, SharePercent, WalletID)
 VALUES
 ('TH01','020000000','hash',15.00,10.00,2),

@@ -19,18 +19,21 @@ export default class CreateOrderUI {
     $('#btnCalc').onclick           = () => this.calcQuotes();
     $('#nextToStep5').onclick       = () => { unmute($('#step5')); scrollToEl($('#step5')); this.refreshCheckout(); };
 
-    // checkout / step5
+    // step5 + checkout
     $('#addon').addEventListener('input', () => this.updateFees());
     $('#btnAddOrder').onclick       = () => this.addOrder();
     $('#selectAll').onchange        = (e)=> this.toggleAll(e.target.checked);
     $('#btnPayAll').onclick         = () => this.payAll();
 
+    // guards + defaults for numeric inputs
+    this.attachNumericGuards();
+
     // initial locks
     mute($('#step3')); mute($('#step5'));
-    this.updateNextBtn();           // ปุ่ม step1
-    this.setBtnState($('#nextToStep5'), false); // ปุ่ม step4
+    this.updateNextBtn();                 // step1 button state
+    this.setBtnState($('#nextToStep5'), false); // step4 button state (gray)
 
-    // โหลด CHECK OUT ทันที (ใช้งานได้ตลอด)
+    // initial checkout
     this.refreshCheckout();
   }
 
@@ -43,6 +46,47 @@ export default class CreateOrderUI {
     } else {
       btn.classList.add('btn-gray');
       btn.classList.remove('bg-primary','text-white');
+    }
+  }
+
+  // sanitize numeric fields live:
+  attachNumericGuards(){
+    // integer fields: w, l, h (>=0)
+    ['w','l','h'].forEach(id=>{
+      const el = $('#'+id);
+      if (!el) return;
+      if (el.value === '') el.value = '0';
+      const fix = () => {
+        const parsed = parseInt(String(el.value).replace(',', ''), 10);
+        const v = Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
+        el.value = String(v);
+      };
+      el.addEventListener('change', fix);
+      el.addEventListener('blur', fix);
+    });
+
+    // decimal fields: weight, addon (>=0) with 2 decimals
+    const decimalFix = (el) => {
+      let raw = String(el.value).replace(',', '.');
+      let num = parseFloat(raw);
+      if (!Number.isFinite(num) || num < 0) num = 0;
+      el.value = num.toFixed(2);
+      // update fee preview if it's addon
+      if (el.id === 'addon') this.updateFees();
+    };
+
+    const weight = $('#weight');
+    if (weight) {
+      if (weight.value === '') weight.value = '0.00';
+      weight.addEventListener('change', ()=> decimalFix(weight));
+      weight.addEventListener('blur',   ()=> decimalFix(weight));
+    }
+
+    const addon = $('#addon');
+    if (addon) {
+      if (addon.value === '') addon.value = '0.00';
+      addon.addEventListener('change', ()=> decimalFix(addon));
+      addon.addEventListener('blur',   ()=> decimalFix(addon));
     }
   }
 
@@ -119,26 +163,30 @@ export default class CreateOrderUI {
   }
 
   // ---------- STEP3: quotes ----------
-  // ไม่เขียนค่ากลับ input เพื่อป้องกัน "ค่าหาย"
   readParcelInputs(){
-    const toNum = (v)=> {
-      const n = Number(String(v).replace(',', '.'));
-      return Number.isFinite(n) ? n : NaN;
+    const toPosInt = (v)=> {
+      const n = parseInt(String(v).replace(',', ''), 10);
+      return Number.isFinite(n) && n > 0 ? n : 0;
+    };
+    const toPosDec2 = (v)=> {
+      const n = parseFloat(String(v).replace(',', '.'));
+      return Number.isFinite(n) && n > 0 ? Number(n.toFixed(2)) : 0;
     };
     return {
-      width:  toNum($('#w').value),
-      length: toNum($('#l').value),
-      height: toNum($('#h').value),
-      weight: toNum($('#weight').value)
+      width:  toPosInt($('#w').value),
+      length: toPosInt($('#l').value),
+      height: toPosInt($('#h').value),
+      weight: toPosDec2($('#weight').value)
     };
   }
 
   async calcQuotes(){
     if (!this.sender || !this.receiver) return Popup.error('ยังไม่ครบผู้ส่ง/ผู้รับ');
 
+    this.attachNumericGuards();
+
     const size = this.readParcelInputs();
-    // ตรวจว่ากรอกครบและเป็นตัวเลข
-    if ([size.width,size.length,size.height,size.weight].some(x=>!Number.isFinite(x) || x<=0)){
+    if ([size.width,size.length,size.height,size.weight].some(x=>x<=0)){
       return Popup.error('กรุณากรอก กว้าง/ยาว/สูง/น้ำหนัก ให้ถูกต้อง (> 0)');
     }
 
@@ -146,23 +194,24 @@ export default class CreateOrderUI {
     const tbody = $('#quoteRows');
 
     if (!quotes?.length){
-      tbody.innerHTML = `<tr><td class="py-3" colspan="4">ไม่มีตัวเลือก</td></tr>`;
+      tbody.innerHTML = `<tr><td class="py-3" colspan="3">ไม่มีตัวเลือก</td></tr>`;
       this.selectedQuote = null;
       this.setBtnState($('#nextToStep5'), false);
       this.updateFees();
       return;
     }
 
+    quotes.sort((a,b)=> Number(a.shipCostCustomer) - Number(b.shipCostCustomer));
+
     tbody.innerHTML = quotes.map(q=>`
-      <tr class="border-t border-slate-200 hover:bg-slate-50 cursor-pointer" data-id="${q.companyId}" data-ship="${q.shipCostCustomer}" data-profit="${q.profit}">
+      <tr class="border-t border-slate-200 hover:bg-slate-50 cursor-pointer"
+          data-id="${q.companyId}" data-ship="${q.shipCostCustomer}" data-profit="${q.profit}">
         <td class="py-3">${q.companyName}</td>
         <td class="py-3">${fmtMoney(q.shipCostCustomer)}</td>
         <td class="py-3">${fmtMoney(q.profit)}</td>
-        <td class="py-3">${q.etaDays}</td>
       </tr>
     `).join('');
 
-    // ต้อง "เลือก" ก่อนถึงจะไปต่อได้
     $$('#quoteRows tr').forEach(tr=>{
       tr.onclick = ()=>{
         $$('#quoteRows tr').forEach(x=>x.classList.remove('ring','ring-blue-400'));
@@ -173,12 +222,11 @@ export default class CreateOrderUI {
           profit: Number(tr.dataset.profit),
           companyName: tr.children[0].textContent.trim()
         };
-        this.setBtnState($('#nextToStep5'), true); // ปุ่มเป็นสีน้ำเงิน
+        this.setBtnState($('#nextToStep5'), true);
         this.updateFees();
       };
     });
 
-    // ยังไม่ได้เลือก แสดงปุ่มเป็นสีเทา
     this.selectedQuote = null;
     this.setBtnState($('#nextToStep5'), false);
     scrollToEl($('#step3'));
@@ -186,34 +234,36 @@ export default class CreateOrderUI {
 
   // ---------- STEP5 ----------
   updateFees(){
-    const addOnRaw = $('#addon').value;
-    const addOn = Number(String(addOnRaw).replace(',', '.'));
-    const validAddOn = Number.isFinite(addOn) ? addOn : 0;
+    const toDec2 = (v)=> {
+      const n = parseFloat(String(v).replace(',', '.'));
+      return Number.isFinite(n) && n >= 0 ? Number(n.toFixed(2)) : 0;
+    };
+    const addOn = toDec2($('#addon').value);
 
     if (!this.selectedQuote){
       $('#feeShip').textContent   = '$0.00';
       $('#feeWallet').textContent = '$0.00';
-      $('#feeCharge').textContent = fmtMoney(validAddOn);
+      $('#feeCharge').textContent = fmtMoney(addOn);
       return;
     }
     const shipGross = this.selectedQuote.shipCost;           // ลูกค้าจ่าย
     const walletNet = shipGross - this.selectedQuote.profit; // ร้านจ่ายให้บริษัท
     $('#feeShip').textContent   = fmtMoney(shipGross);
     $('#feeWallet').textContent = fmtMoney(walletNet);
-    $('#feeCharge').textContent = fmtMoney(shipGross + validAddOn);
+    $('#feeCharge').textContent = fmtMoney(shipGross + addOn);
   }
 
   async addOrder(){
     if (!this.selectedQuote) return Popup.error('ยังไม่ได้เลือกบริษัทขนส่ง');
 
     const size = this.readParcelInputs();
-    if ([size.width,size.length,size.height,size.weight].some(x=>!Number.isFinite(x) || x<=0)){
+    if ([size.width,size.length,size.height,size.weight].some(x=>x<=0)){
       return Popup.error('ข้อมูลพัสดุไม่ถูกต้อง');
     }
 
-    const addOnRaw = $('#addon').value;
-    const addOn = Number(String(addOnRaw).replace(',', '.'));
-    const addOnCost = Number.isFinite(addOn) ? addOn : 0;
+    // sanitize addon
+    const addOn = parseFloat(String($('#addon').value).replace(',', '.'));
+    const addOnCost = Number.isFinite(addOn) && addOn >= 0 ? Number(addOn.toFixed(2)) : 0;
 
     const payload = {
       senderId: this.sender.CustomerID,
@@ -227,9 +277,45 @@ export default class CreateOrderUI {
 
     const created = await ApiClient.createOrderDraft(payload);
     if (created?.OrderID){
-      // รีเฟรชหน้าเว็บ (ตาม requirement)
-      window.location.reload();
+      // ล้างค่าฟอร์มทั้งหมดก่อนรีเฟรช
+      this.resetAllForms();
+      // รีเฟรชหน้า (หน่วงเสี้ยววินาทีเพื่อให้ DOM ล้างค่าทัน)
+      setTimeout(()=> window.location.reload(), 100);
     } else Popup.error('สร้างออร์เดอร์ไม่สำเร็จ');
+  }
+
+  resetAllForms(){
+    // clear sender/receiver state
+    this.sender = null; this.receiver = null;
+    // phones
+    $('#senderPhone').value = '';
+    $('#receiverPhone').value = '';
+    // preview
+    $('#senderPreview').innerHTML = `<span class="text-slate-500">ยังไม่มีข้อมูล</span>`;
+    $('#receiverPreview').innerHTML = `<span class="text-slate-500">ยังไม่มีข้อมูล</span>`;
+    // forms
+    $('#senderForm').classList.add('hidden');
+    $('#receiverForm').classList.add('hidden');
+    $('#senderName').value = '';
+    $('#senderAddr').value = '';
+    $('#receiverName').value = '';
+    $('#receiverAddr').value = '';
+    // parcel inputs
+    $('#w').value = '0';
+    $('#l').value = '0';
+    $('#h').value = '0';
+    $('#weight').value = '0.00';
+    $('#parcelType').selectedIndex = 0;
+    // step3/4
+    $('#quoteRows').innerHTML = `<tr><td class="py-3" colspan="4" id="quoteEmpty">– กดคำนวณราคาเพื่อแสดงตัวเลือก –</td></tr>`;
+    this.selectedQuote = null;
+    this.setBtnState($('#nextToStep3'), false);
+    this.setBtnState($('#nextToStep5'), false);
+    // step5
+    $('#addon').value = '0.00';
+    $('#feeShip').textContent = '$0.00';
+    $('#feeWallet').textContent = '$0.00';
+    $('#feeCharge').textContent = '$0.00';
   }
 
   // ---------- CHECK OUT ----------

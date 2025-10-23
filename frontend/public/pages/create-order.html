@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ShipLink • Create Order</title>
+  <title>Ship Link • Create Order</title>
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
@@ -53,7 +53,7 @@
   <!-- Sidebar -->
   <aside class="w-64 bg-sidebar-light border-r border-border-light">
     <div class="p-6">
-      <h1 class="text-2xl font-extrabold">ShipLink</h1>
+      <h1 class="text-2xl font-extrabold">Ship Link</h1>
     </div>
     <nav class="mt-4">
       <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100" href="#"><span class="material-icons">dashboard</span><span class="ml-3">Dashboard</span></a>
@@ -85,7 +85,7 @@
             <span class="inline-block bg-orange-200 text-orange-800 text-sm font-semibold px-3 py-1 rounded-md mb-4">Step 1 ข้อมูลผู้ส่ง</span>
             <label class="block text-sm font-medium mb-1">เบอร์โทรศัพท์</label>
             <div class="relative mb-4">
-              <input id="senderPhone" class="w-full pl-4 pr-10 py-2 bg-input-light border border-border-light rounded-md" placeholder="กรุณากรอกเบอร์โทรศัพท์">
+              <input id="senderPhone" class="w-full pl-4 pr-10 py-2 bg-input-light border border-border-light rounded-md" placeholder="กรุณากรอกเบอร์โทรศัพท์" value="">
               <button id="btnSearchSender" class="material-icons absolute right-2 top-1/2 -translate-y-1/2 text-slate-500">search</button>
             </div>
 
@@ -105,7 +105,7 @@
             <span class="inline-block bg-orange-200 text-orange-800 text-sm font-semibold px-3 py-1 rounded-md mb-4">Step 2 ข้อมูลผู้รับ</span>
             <label class="block text-sm font-medium mb-1">เบอร์โทรศัพท์</label>
             <div class="relative mb-4">
-              <input id="receiverPhone" class="w-full pl-4 pr-10 py-2 bg-input-light border border-border-light rounded-md" placeholder="กรุณากรอกเบอร์โทรศัพท์">
+              <input id="receiverPhone" class="w-full pl-4 pr-10 py-2 bg-input-light border border-border-light rounded-md" placeholder="กรุณากรอกเบอร์โทรศัพท์" value="">
               <button id="btnSearchReceiver" class="material-icons absolute right-2 top-1/2 -translate-y-1/2 text-slate-500">search</button>
             </div>
 
@@ -133,10 +133,22 @@
           <div>
             <span class="inline-block bg-yellow-200 text-yellow-800 text-sm font-semibold px-3 py-1 rounded-md mb-4">Step 3 รายละเอียดพัสดุ</span>
             <div class="grid grid-cols-2 gap-4">
-              <div><label class="block text-sm font-medium mb-1">กว้าง (ซม.)</label><input id="w" class="w-full pl-4 py-2 bg-input-light border border-border-light rounded-md" placeholder="กว้าง"></div>
-              <div><label class="block text-sm font-medium mb-1">ยาว (ซม.)</label><input id="l" class="w-full pl-4 py-2 bg-input-light border border-border-light rounded-md" placeholder="ยาว"></div>
-              <div><label class="block text-sm font-medium mb-1">สูง (ซม.)</label><input id="h" class="w-full pl-4 py-2 bg-input-light border border-border-light rounded-md" placeholder="สูง"></div>
-              <div><label class="block text-sm font-medium mb-1">น้ำหนัก (กก.)</label><input id="weight" class="w-full pl-4 py-2 bg-input-light border border-border-light rounded-md" placeholder="0.00"></div>
+              <div>
+                <label class="block text-sm font-medium mb-1">กว้าง (ซม.)</label>
+                <input id="w" class="w-full pl-4 py-2 bg-input-light border border-border-light rounded-md" value="0" inputmode="numeric">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">ยาว (ซม.)</label>
+                <input id="l" class="w-full pl-4 py-2 bg-input-light border border-border-light rounded-md" value="0" inputmode="numeric">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">สูง (ซม.)</label>
+                <input id="h" class="w-full pl-4 py-2 bg-input-light border border-border-light rounded-md" value="0" inputmode="numeric">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">น้ำหนัก (กก.)</label>
+                <input id="weight" class="w-full pl-4 py-2 bg-input-light border border-border-light rounded-md" value="0.00" inputmode="decimal">
+              </div>
             </div>
 
             <label class="block text-sm font-medium mt-3 mb-1">ประเภทพัสดุ</label>
@@ -154,12 +166,17 @@
             <span class="inline-block bg-green-200 text-green-800 text-sm font-semibold px-3 py-1 rounded-md mb-4">Step 4 คำนวณค่าขนส่ง</span>
             <table class="w-full text-left text-sm">
               <thead class="text-slate-500">
-                <tr><th class="py-2 font-semibold">บริษัท</th><th class="py-2 font-semibold">ค่าขนส่ง</th><th class="py-2 font-semibold">รายได้</th><th class="py-2 font-semibold">ระยะเวลา (วัน)</th></tr>
+                <tr>
+                  <th class="py-2 font-semibold">บริษัท</th>
+                  <th class="py-2 font-semibold">ค่าขนส่ง</th>
+                  <th class="py-2 font-semibold">รายได้</th>
+                </tr>
               </thead>
-              <tbody id="quoteRows"><tr><td class="py-3" colspan="4" id="quoteEmpty">– กดคำนวณราคาเพื่อแสดงตัวเลือก –</td></tr></tbody>
+              <tbody id="quoteRows">
+                <tr><td class="py-3" colspan="3" id="quoteEmpty">– กดคำนวณราคาเพื่อแสดงตัวเลือก –</td></tr>
+              </tbody>
             </table>
             <div class="flex justify-end mt-6">
-              <!-- เริ่มต้นเป็นสีเทา -->
               <button id="nextToStep5" class="btn-gray font-semibold py-2 px-6 rounded-md" disabled>ถัดไป</button>
             </div>
           </div>
@@ -174,7 +191,7 @@
             <div class="mb-2">บริษัทขนส่ง : <span id="chosenCompany" class="text-primary font-semibold">-</span></div>
             <div class="mb-4">
               <label class="block text-sm font-medium mb-1">ราคาสินค้าเสริม</label>
-              <input id="addon" class="w-full pl-4 py-2 bg-input-light border border-border-light rounded-md" value="0.00">
+              <input id="addon" class="w-full pl-4 py-2 bg-input-light border border-border-light rounded-md" value="0.00" inputmode="decimal">
             </div>
             <div class="grid grid-cols-2 gap-4 mb-4">
               <div><div class="text-sm text-slate-600">ค่าขนส่ง</div><div id="feeShip" class="font-semibold">$0.00</div></div>
