@@ -34,5 +34,15 @@ class BranchWalletController {
       res.status(400).json({ message: err.message });
     }
   }
+
+    static async listTransactions(req, res) {
+    try {
+      const branchId = Number(req.query.branchId || 1);
+      const rows = await BranchWalletService.listTransactions(branchId);
+      res.json(rows);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  }
 }
 module.exports = BranchWalletController;

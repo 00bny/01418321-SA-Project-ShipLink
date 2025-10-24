@@ -70,5 +70,30 @@ class BranchWalletService {
     const [row] = await DB.query(`SELECT WalletID, Balance FROM Wallet WHERE WalletID=?`, [w.WalletID]);
     return new Wallet(row);
   }
+
+  static async listTransactions(branchId) {
+    const sql = `
+      SELECT 
+        t.TransactionID,
+        t.TransactionAmount,
+        t.TransactionType,
+        t.TransactionDateTime,
+        DATE_FORMAT(t.TransactionDateTime, '%d/%m/%Y %H:%i') AS TxnDate,
+        e.EmployeeName
+      FROM TransactionHist t
+      LEFT JOIN Employee e ON e.EmployeeID = t.EmployeeID
+      WHERE t.BranchID = ?
+      ORDER BY t.TransactionDateTime DESC
+    `;
+    const rows = await DB.query(sql, [branchId]);
+    return rows.map(r => ({
+      txnId: String(r.TransactionID),
+      amount: Number(r.TransactionAmount),
+      type: r.TransactionType,         // 'TOPUP' | 'WITHDRAW'
+      date: r.TxnDate,                 // 'dd/mm/YYYY HH:MM'
+      employee: r.EmployeeName || '-'
+    }));
+  }
+
 }
 module.exports = BranchWalletService;

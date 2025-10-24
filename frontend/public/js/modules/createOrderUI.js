@@ -432,6 +432,7 @@ export default class CreateOrderUI {
     const menu = document.getElementById('walletMenu');
     const topup = document.getElementById('actTopup');
     const withdraw = document.getElementById('actWithdraw');
+    const hist = document.getElementById('actHist');
     if (!btn || !menu) return;
 
     btn.addEventListener('click', (e)=>{
@@ -445,16 +446,23 @@ export default class CreateOrderUI {
     // ไปหน้าเติมเงิน (ของสาขา)
     if (topup){
         topup.addEventListener('click', ()=>{
-        const url = new URL('../pages/branch-topup.html', window.location.href);
-        url.searchParams.set('branchId', String(this.branchId));
-        window.location.href = url.toString();
+            const url = new URL('../pages/branch-topup.html', window.location.href);
+            url.searchParams.set('branchId', String(this.branchId));
+            window.location.href = url.toString();
         });
     }
     if (withdraw){
         withdraw.addEventListener('click', ()=>{
-        const url = new URL('../pages/branch-withdraw.html', window.location.href);
-        url.searchParams.set('branchId', String(this.branchId));
-        window.location.href = url.toString();
+            const url = new URL('../pages/branch-withdraw.html', window.location.href);
+            url.searchParams.set('branchId', String(this.branchId));
+            window.location.href = url.toString();
+        });
+    }
+    if (hist){
+        hist.addEventListener('click', ()=>{
+            const url = new URL('../pages/branch-transactions.html', window.location.href);
+            url.searchParams.set('branchId', String(this.branchId));
+            window.location.href = url.toString();
         });
     }
   }
