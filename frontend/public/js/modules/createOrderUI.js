@@ -9,6 +9,7 @@ export default class CreateOrderUI {
     this.selectedQuote = null;
     this.employeeId = 1;
     this.branchId  = 1;
+    this.editingOrderId = null;   // <<<<<< เพิ่มสถานะแก้ไข
 
     // step1
     $('#btnSearchSender').onclick   = () => this.search('sender');
@@ -23,11 +24,11 @@ export default class CreateOrderUI {
 
     // step5 + checkout
     $('#addon').addEventListener('input', () => this.updateFees());
-    $('#btnAddOrder').onclick       = () => this.addOrder();
+    $('#btnAddOrder').onclick       = () => this.addOrUpdateOrder();
     $('#selectAll').onchange        = (e)=> this.toggleAll(e.target.checked);
     $('#btnPayAll').onclick         = () => this.payAll();
 
-    // numeric guards (ทำให้ abc → 0 หรือ 0.00 อัตโนมัติเมื่อเปลี่ยนช่อง)
+    // numeric guards
     this.attachNumericGuards();
 
     // initial locks
@@ -52,7 +53,6 @@ export default class CreateOrderUI {
   }
 
   attachNumericGuards(){
-    // integer fields: w,l,h (>=0)
     ['w','l','h'].forEach(id=>{
       const el = $('#'+id); if (!el) return;
       if (el.value === '') el.value = '0';
@@ -64,7 +64,6 @@ export default class CreateOrderUI {
       el.addEventListener('change', fix);
       el.addEventListener('blur', fix);
     });
-    // decimal fields: weight, addon (>=0, 2 decimals)
     const decFix = (el) => {
       let raw = String(el.value).replace(',', '.');
       let num = parseFloat(raw);
@@ -84,12 +83,12 @@ export default class CreateOrderUI {
     const addr = data.CustomerAddress || '';
 
     box.innerHTML = `
-        <div class="text-slate-900 break-words whitespace-pre-wrap"><b>ชื่อ:</b> ${name}</div>
-        <div class="text-slate-900 break-words whitespace-pre-wrap"><b>เบอร์โทรศัพท์:</b> ${phone}</div>
-        <div class="text-slate-900 break-words whitespace-pre-wrap"><b>ที่อยู่:</b> ${addr}</div>
-        <div class="mt-3">
+      <div class="text-slate-900 break-words whitespace-pre-wrap"><b>ชื่อ:</b> ${name}</div>
+      <div class="text-slate-900 break-words whitespace-pre-wrap"><b>เบอร์โทรศัพท์:</b> ${phone}</div>
+      <div class="text-slate-900 break-words whitespace-pre-wrap"><b>ที่อยู่:</b> ${addr}</div>
+      <div class="mt-3">
         <button class="editBtn bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm px-3 py-1 rounded-md">แก้ไข</button>
-        </div>
+      </div>
     `;
     box.querySelector('.editBtn').onclick = () => {
       const form = $(`#${which}Form`);
@@ -108,12 +107,8 @@ export default class CreateOrderUI {
   // ---------- STEP1 ----------
   async search(which){
     const phone = $(`#${which}Phone`).value.trim();
-
-    // Rule: เบอร์โทรศัพท์ต้องเป็นตัวเลขล้วน
     if (!phone) return Popup.error('กรุณากรอกเบอร์โทรศัพท์');
-    if (!/^\d+$/.test(phone)) {
-      return Popup.error('กรุณากรอกเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น');
-    }
+    if (!/^\d+$/.test(phone)) return Popup.error('กรุณากรอกเบอร์โทรศัพท์เป็นตัวเลขเท่านั้น');
 
     const found = await ApiClient.searchCustomer(phone);
     const form = $(`#${which}Form`);
@@ -136,11 +131,9 @@ export default class CreateOrderUI {
     const phone = $(`#${which}Phone`).value.trim();
     const name  = $(`#${which}Name`).value.trim();
     const addr  = $(`#${which}Addr`).value.trim();
-
-    // Rule: ความยาวชื่อ ≤ 60, ที่อยู่ ≤ 150
     if (!name || !addr) return Popup.error('กรอกชื่อ/ที่อยู่ให้ครบ');
     if (name.length > 60)  return Popup.error('ชื่อต้องไม่เกิน 60 ตัวอักษร');
-    if (addr.length > 150)  return Popup.error('ที่อยู่ต้องไม่เกิน 150 ตัวอักษร');
+    if (addr.length > 150) return Popup.error('ที่อยู่ต้องไม่เกิน 150 ตัวอักษร');
 
     let result;
     if (this[which]) result = await ApiClient.updateCustomer(phone, { name, address: addr });
@@ -172,28 +165,20 @@ export default class CreateOrderUI {
   }
 
   validateParcelRules(size){
-    // Rule ขนาด: แต่ละด้าน ≤ 100, ผลรวม ≤ 180, น้ำหนัก ≤ 20
     const { width, length, height, weight } = size;
-
     if (width <= 0 || length <= 0 || height <= 0 || weight <= 0)
       return 'กรุณากรอก กว้าง/ยาว/สูง/น้ำหนัก ให้ถูกต้อง (> 0)';
-
     if (width > 100 || length > 100 || height > 100)
       return 'กว้าง ยาว สูง แต่ละด้านต้องไม่เกิน 100 ซม.';
-
     if ((width + length + height) > 180)
       return 'ผลรวมของกว้าง+ยาว+สูง ต้องไม่เกิน 180 ซม.';
-
     if (weight > 20)
       return 'น้ำหนักต้องไม่เกิน 20 กิโลกรัม';
-
     return null;
   }
 
   async calcQuotes(){
     if (!this.sender || !this.receiver) return Popup.error('ยังไม่ครบผู้ส่ง/ผู้รับ');
-
-    // sanitize อีกครั้ง
     this.attachNumericGuards();
 
     const size = this.readParcelInputs();
@@ -211,9 +196,7 @@ export default class CreateOrderUI {
       return;
     }
 
-    // เรียงค่าขนส่งน้อย→มาก (คงพฤติกรรมที่เพิ่มไว้ก่อนหน้า)
     quotes.sort((a,b)=> Number(a.shipCostCustomer) - Number(b.shipCostCustomer));
-
     tbody.innerHTML = quotes.map(q=>`
       <tr class="border-t border-slate-200 hover:bg-slate-50 cursor-pointer"
           data-id="${q.companyId}" data-ship="${q.shipCostCustomer}" data-profit="${q.profit}">
@@ -238,8 +221,16 @@ export default class CreateOrderUI {
       };
     });
 
-    this.selectedQuote = null;
-    this.setBtnState($('#nextToStep5'), false);
+    // ถ้าอยู่ในโหมดแก้ไขและมี companyId เดิม → auto select แถวที่ตรง
+    if (this.editingOrderId && this.__editingCompanyId){
+      const tr = Array.from($$('#quoteRows tr')).find(t => Number(t.dataset.id) === Number(this.__editingCompanyId));
+      if (tr) tr.click();
+      this.__editingCompanyId = null; // เคลียร์
+    } else {
+      this.selectedQuote = null;
+      this.setBtnState($('#nextToStep5'), false);
+    }
+
     scrollToEl($('#step3'));
   }
 
@@ -264,14 +255,12 @@ export default class CreateOrderUI {
     $('#feeCharge').textContent = fmtMoney(shipGross + addOn);
   }
 
-  async addOrder(){
+  async addOrUpdateOrder(){
     if (!this.selectedQuote) return Popup.error('ยังไม่ได้เลือกบริษัทขนส่ง');
-
     const size = this.readParcelInputs();
     const msg = this.validateParcelRules(size);
     if (msg) return Popup.error(msg);
 
-    // sanitize addon
     const addOn = parseFloat(String($('#addon').value).replace(',', '.'));
     const addOnCost = Number.isFinite(addOn) && addOn >= 0 ? Number(addOn.toFixed(2)) : 0;
 
@@ -286,31 +275,37 @@ export default class CreateOrderUI {
       branchId: this.branchId
     };
 
-    const created = await ApiClient.createOrderDraft(payload);
-    if (created?.OrderID){
+    let result;
+    if (this.editingOrderId) {
+      result = await ApiClient.updateOrder(this.editingOrderId, payload);
+    } else {
+      result = await ApiClient.createOrderDraft(payload);
+    }
+
+    if (result?.OrderID){
+      this.editingOrderId = null;
       this.resetAllForms();
       setTimeout(()=> window.location.reload(), 100);
-    } else Popup.error('สร้างออร์เดอร์ไม่สำเร็จ');
+    } else {
+      Popup.error(result?.message || 'บันทึกออร์เดอร์ไม่สำเร็จ');
+    }
   }
 
   resetAllForms(){
-    // clear sender/receiver state
     this.sender = null; this.receiver = null;
+    this.editingOrderId = null;
     $('#senderPhone').value = ''; $('#receiverPhone').value = '';
     $('#senderPreview').innerHTML = `<span class="text-slate-500">ยังไม่มีข้อมูล</span>`;
     $('#receiverPreview').innerHTML = `<span class="text-slate-500">ยังไม่มีข้อมูล</span>`;
     $('#senderForm').classList.add('hidden'); $('#receiverForm').classList.add('hidden');
     $('#senderName').value = ''; $('#senderAddr').value = '';
     $('#receiverName').value = ''; $('#receiverAddr').value = '';
-    // parcel inputs
     $('#w').value = '0'; $('#l').value = '0'; $('#h').value = '0'; $('#weight').value = '0.00';
     $('#parcelType').selectedIndex = 0;
-    // quotes table
     $('#quoteRows').innerHTML = `<tr><td class="py-3" colspan="3" id="quoteEmpty">– กดคำนวณราคาเพื่อแสดงตัวเลือก –</td></tr>`;
     this.selectedQuote = null;
     this.setBtnState($('#nextToStep3'), false);
     this.setBtnState($('#nextToStep5'), false);
-    // fees
     $('#addon').value = '0.00';
     $('#feeShip').textContent = '$0.00';
     $('#feeWallet').textContent = '$0.00';
@@ -322,19 +317,80 @@ export default class CreateOrderUI {
     const rows = await ApiClient.listUnpaid(this.branchId);
     const tbody = $('#checkoutRows');
     tbody.innerHTML = rows.map(r=>`
-      <tr class="border-t border-slate-200">
-        <td class="py-2"><input type="checkbox" class="chk" data-amount="${Number(r.ShipCost) + Number(r.AddOnCost||0)}"></td>
+      <tr class="border-t border-slate-200" data-id="${r.OrderID}">
+        <td class="py-2">
+          <input type="checkbox" class="chk" data-amount="${Number(r.ShipCost) + Number(r.AddOnCost||0)}">
+        </td>
         <td class="py-2">${r.OrderID}</td>
         <td class="py-2">${fmtMoney(Number(r.ShipCost) + Number(r.AddOnCost||0))}</td>
         <td class="py-2">${r.ParcelType}</td>
-        <td class="py-2 text-red-500">แก้ไข / ยกเลิก</td>
+        <td class="py-2">
+          <button class="btn-edit text-blue-600 hover:underline mr-3">แก้ไข</button>
+          <button class="btn-cancel text-red-600 hover:underline">ยกเลิก</button>
+        </td>
       </tr>
     `).join('');
 
+    // bind checkbox summary
     $$('#checkoutRows .chk').forEach(chk => chk.onchange = ()=> this.updateSelectedSummary());
     this.updateSelectedSummary();
     $('#chosenCompany').textContent = this.selectedQuote?.companyName || '-';
     this.updateFees();
+
+    // bind Edit/Cancel
+    $$('#checkoutRows .btn-edit').forEach(btn=>{
+      btn.onclick = (e)=>{
+        const tr = e.target.closest('tr');
+        const id = Number(tr.dataset.id);
+        this.loadOrderToForm(id);
+      };
+    });
+    $$('#checkoutRows .btn-cancel').forEach(btn=>{
+      btn.onclick = async (e)=>{
+        const tr = e.target.closest('tr');
+        const id = Number(tr.dataset.id);
+        if (confirm(`ยืนยันยกเลิกออร์เดอร์ #${id} ?`)) {
+          const res = await ApiClient.deleteOrder(id);
+          if (res?.deleted) {
+            Popup.info('ลบออร์เดอร์แล้ว');
+            await this.refreshCheckout();
+          } else {
+            Popup.error(res?.message || 'ลบไม่สำเร็จ');
+          }
+        }
+      };
+    });
+  }
+
+  async loadOrderToForm(orderId){
+    const o = await ApiClient.getOrder(orderId);
+    if (!o?.OrderID) return Popup.error('ไม่พบบันทึกออร์เดอร์');
+
+    // โหลดลูกค้า
+    const sender = await ApiClient.getCustomerById(o.SenderID);
+    const receiver = await ApiClient.getCustomerById(o.ReceiverID);
+    if (sender) { this.sender = sender; this.setPreview('sender', sender); $('#senderPhone').value = sender.CustomerPhone || ''; }
+    if (receiver){ this.receiver = receiver; this.setPreview('receiver', receiver); $('#receiverPhone').value = receiver.CustomerPhone || ''; }
+    this.updateNextBtn();
+    unmute($('#step3')); scrollToEl($('#step3'));
+
+    // ขนาด/ประเภท/ addon
+    $('#w').value = String(Math.round(Number(o.Width||0)));
+    $('#l').value = String(Math.round(Number(o.Length||0)));
+    $('#h').value = String(Math.round(Number(o.Height||0)));
+    $('#weight').value = Number(o.Weight||0).toFixed(2);
+    $('#parcelType').value = o.ParcelType || 'อื่นๆ';
+    $('#addon').value = Number(o.AddOnCost||0).toFixed(2);
+
+    // จำ company เพื่อนำไป auto-select หลังคำนวณราคา
+    this.__editingCompanyId = o.CompanyID;
+    this.editingOrderId = o.OrderID;
+
+    // คำนวณราคาตามขนาดปัจจุบันแล้วเลือกบริษัทเดิม
+    await this.calcQuotes();
+
+    // เปิด step5 พร้อม update fees
+    unmute($('#step5')); this.updateFees();
   }
 
   updateSelectedSummary(){

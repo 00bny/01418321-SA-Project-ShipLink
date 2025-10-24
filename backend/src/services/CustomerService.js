@@ -26,5 +26,10 @@ class CustomerService {
     );
     return this.getByPhone(phone);
   }
+
+  static async getById(id) {
+    const rows = await DB.query('SELECT * FROM Customer WHERE CustomerID=?', [id]);
+    return rows[0] ? new Customer(rows[0]) : null;
+  }
 }
 module.exports = CustomerService;
