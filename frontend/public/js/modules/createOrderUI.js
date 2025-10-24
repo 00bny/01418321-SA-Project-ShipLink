@@ -6,7 +6,9 @@ export default class CreateOrderUI {
   constructor(){
     // state
     this.sender = null; this.receiver = null;
-    this.selectedQuote = null; this.employeeId = 1;
+    this.selectedQuote = null;
+    this.employeeId = 1;
+    this.branchId  = 1;
 
     // step1
     $('#btnSearchSender').onclick   = () => this.search('sender');
@@ -280,12 +282,12 @@ export default class CreateOrderUI {
       companyId: this.selectedQuote.companyId,
       parcelType: $('#parcelType').value || 'อื่นๆ',
       width: size.width, height: size.height, length: size.length, weight: size.weight,
-      addOnCost
+      addOnCost,
+      branchId: this.branchId
     };
 
     const created = await ApiClient.createOrderDraft(payload);
     if (created?.OrderID){
-      // ล้างค่าฟอร์มทั้งหมดก่อนรีเฟรช
       this.resetAllForms();
       setTimeout(()=> window.location.reload(), 100);
     } else Popup.error('สร้างออร์เดอร์ไม่สำเร็จ');
@@ -317,7 +319,7 @@ export default class CreateOrderUI {
 
   // ---------- CHECK OUT ----------
   async refreshCheckout(){
-    const rows = await ApiClient.listUnpaid(this.employeeId);
+    const rows = await ApiClient.listUnpaid(this.branchId);
     const tbody = $('#checkoutRows');
     tbody.innerHTML = rows.map(r=>`
       <tr class="border-t border-slate-200">

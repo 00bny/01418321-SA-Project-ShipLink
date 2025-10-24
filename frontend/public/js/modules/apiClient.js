@@ -1,14 +1,11 @@
 const API = 'http://localhost:5001';
 
 async function j(res){
-  const txt = await res.text();
-  let data;
-  try { data = JSON.parse(txt); } catch { data = { raw: txt }; }
-  return { ok: res.ok, status: res.status, ...data };
+ const txt = await res.text();
+  try { return JSON.parse(txt); } catch { return []; }
 }
 
 export const ApiClient = {
-  // --- เดิม (customers / orders / checkout / quotes) ---
   async searchCustomer(phone){
     const r = await fetch(`${API}/api/customers/search?phone=${encodeURIComponent(phone)}`);
     if (r.status === 404) return null; return j(r);
@@ -22,12 +19,21 @@ export const ApiClient = {
     return j(r);
   },
   async getCompanies(){ const r = await fetch(`${API}/api/companies`); return j(r); },
-  async getQuotes(payload){ const r = await fetch(`${API}/api/quotes`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }); return j(r); },
+  async getQuotes(payload){
+    const r = await fetch(`${API}/api/quotes`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload) });
+        return j(r);
+    },
   async createOrderDraft(payload){
     const r = await fetch(`${API}/api/orders`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
     return j(r);
   },
-  async listUnpaid(employeeId){ const r = await fetch(`${API}/api/orders/unpaid?employeeId=${employeeId}`); return j(r); },
+  async listUnpaid(branchId){
+    const r = await fetch(`${API}/api/orders/unpaid?branchId=${encodeURIComponent(branchId)}`);
+    return j(r);
+  },
   async payAll(employeeId){ const r = await fetch(`${API}/api/checkout/pay-all`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ employeeId }) }); return j(r); },
 
   // --- ใหม่ (auth) ---

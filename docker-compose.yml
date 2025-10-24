@@ -36,7 +36,6 @@ services:
       DB_NAME: shiplink_db
     volumes:
       - ./backend:/usr/src/app
-      - ./frontend:/usr/src/app/frontend
       - /usr/src/app/node_modules
     ports:
       - "5001:5001"
