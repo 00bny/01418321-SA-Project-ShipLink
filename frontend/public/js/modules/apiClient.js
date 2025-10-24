@@ -132,5 +132,22 @@ export const ApiClient = {
     return j(r);
   },
 
+  // ดึงรายการคำขอเข้ารับพัสดุของบริษัท
+  async getCompanyPickups(companyId) {
+    const res = await fetch(`${API}/api/pickup/company/${companyId}`);
+    if (!res.ok) throw new Error('Failed to load pickup requests');
+    return await res.json();
+  },
+
+  // ยืนยันคำเรียกเข้ารับพัสดุ
+  async confirmPickup({ requestId, time, name, phone }) {
+    const res = await fetch(`${API}/api/pickup/confirm`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requestId, time, name, phone })
+    });
+    if (!res.ok) throw new Error('Failed to confirm pickup');
+    return await res.json();
+  },
 
 };

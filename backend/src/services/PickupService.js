@@ -59,6 +59,33 @@ class PickupService {
     `;
     return DB.query(sql, [branchId]);
   }
+
+
+  static async getRequestsByCompany(companyId) {
+    const reqs = await DB.query(
+      `SELECT RequestID, CreatedDate, RequestStatus
+       FROM PickupRequest WHERE CompanyID = ? ORDER BY CreatedDate DESC`,
+      [companyId]
+    );
+
+    for (const r of reqs) {
+      const [countRow] = await DB.query(
+        `SELECT COUNT(*) AS cnt FROM \`Order\` WHERE CompanyID=? AND RequestID=?`,
+        [companyId, r.RequestID]
+      );
+      r.ParcelCount = countRow.cnt;
+    }
+    return reqs;
+  }
+
+  static async confirmPickup({ requestId, time, name, phone }) {
+    await DB.query(
+      `UPDATE PickupRequest
+       SET ScheduledPickupTime=?, PickupStaffName=?, PickupStaffPhone=?, RequestStatus='ยืนยันเข้ารับ'
+       WHERE RequestID=?`,
+      [time, name, phone, requestId]
+    );
+  }  
 }
 
 module.exports = PickupService;
