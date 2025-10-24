@@ -12,7 +12,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
-  <!-- Tailwind Config -->
   <script>
     tailwind.config = {
       darkMode: "class",
@@ -39,7 +38,6 @@
       },
     };
   </script>
-
   <style>
     body{font-family:'Prompt',sans-serif;min-height:max(884px,100dvh)}
   </style>
@@ -71,25 +69,23 @@
   <div class="flex-1 flex flex-col">
     <header class="flex items-center justify-between p-4 bg-white border-b border-border-light">
       <h2 class="text-2xl font-bold">เรียกขนส่งเข้ารับพัสดุ</h2>
-        <!-- Wallet Dropdown -->
-        <div class="relative">
-            <button id="walletBtn" class="flex items-center bg-green-100 text-green-700 px-4 py-2 rounded-lg">
-            <span id="walletBalance">฿0.00</span>
-            <span class="material-icons ml-1">arrow_drop_down</span>
-            </button>
+      <!-- Wallet Dropdown -->
+      <div class="relative">
+        <button id="walletBtn" class="flex items-center bg-green-100 text-green-700 px-4 py-2 rounded-lg">
+          <span id="walletBalance">฿0.00</span>
+          <span class="material-icons ml-1">arrow_drop_down</span>
+        </button>
 
-            <div id="walletMenu"
-                class="hidden absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg border border-slate-200 overflow-hidden z-20">
-            <a id="actTopup" class="block px-4 py-2 hover:bg-slate-100 cursor-pointer">เติมเงิน</a>
-            <a id="actWithdraw" class="block px-4 py-2 hover:bg-slate-100 cursor-pointer">ถอนเงิน</a>
-            <a id="actHist" class="block px-4 py-2 hover:bg-slate-100 cursor-not-allowed opacity-50">ประวัติธุรกรรม</a>
-            </div>
+        <div id="walletMenu"
+             class="hidden absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg border border-slate-200 overflow-hidden z-20">
+          <a id="actTopup" class="block px-4 py-2 hover:bg-slate-100 cursor-pointer">เติมเงิน</a>
+          <a id="actWithdraw" class="block px-4 py-2 hover:bg-slate-100 cursor-pointer">ถอนเงิน</a>
+          <a id="actHist" class="block px-4 py-2 hover:bg-slate-100 cursor-pointer">ประวัติธุรกรรม</a>
         </div>
+      </div>
     </header>
 
     <main class="flex-1 p-6 space-y-6">
-
-      <!-- Section: Company List -->
       <section class="bg-white rounded-xl shadow p-6">
         <h3 class="text-lg font-semibold mb-4">เรียกขนส่งเข้ารับ</h3>
         <div class="overflow-x-auto">
@@ -107,7 +103,6 @@
         </div>
       </section>
 
-      <!-- Section: Pickup History -->
       <section class="bg-white rounded-xl shadow p-6">
         <h3 class="text-lg font-semibold mb-4">ประวัติการเรียกรับพัสดุ</h3>
         <div class="overflow-x-auto">
@@ -132,5 +127,9 @@
 </div>
 
 <script type="module" src="../js/pickup.js"></script>
+<script type="module">
+  import { initWalletDropdown } from '../js/wallet.js';
+  document.addEventListener('DOMContentLoaded', () => initWalletDropdown(1));
+</script>
 </body>
 </html>
