@@ -431,6 +431,7 @@ export default class CreateOrderUI {
     const btn = document.getElementById('walletBtn');
     const menu = document.getElementById('walletMenu');
     const topup = document.getElementById('actTopup');
+    const withdraw = document.getElementById('actWithdraw');
     if (!btn || !menu) return;
 
     btn.addEventListener('click', (e)=>{
@@ -445,6 +446,13 @@ export default class CreateOrderUI {
     if (topup){
         topup.addEventListener('click', ()=>{
         const url = new URL('../pages/branch-topup.html', window.location.href);
+        url.searchParams.set('branchId', String(this.branchId));
+        window.location.href = url.toString();
+        });
+    }
+    if (withdraw){
+        withdraw.addEventListener('click', ()=>{
+        const url = new URL('../pages/branch-withdraw.html', window.location.href);
         url.searchParams.set('branchId', String(this.branchId));
         window.location.href = url.toString();
         });

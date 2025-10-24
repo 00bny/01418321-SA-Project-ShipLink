@@ -7,4 +7,7 @@ router.get('/balance', BranchWalletController.getBalance);
 // POST /api/branch-wallet/topup  { branchId, amount, employeeId }
 router.post('/topup', BranchWalletController.topup);
 
+// POST /api/branch-wallet/withdraw  { branchId, amount, employeeId }
+router.post('/withdraw', BranchWalletController.withdraw);
+
 module.exports = router;
