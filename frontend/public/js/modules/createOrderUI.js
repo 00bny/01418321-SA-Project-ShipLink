@@ -38,6 +38,8 @@ export default class CreateOrderUI {
 
     // initial checkout
     this.refreshCheckout();
+    this.loadBranchBalance();
+    this.initWalletDropdown();
   }
 
   // ---------- helpers ----------
@@ -412,4 +414,41 @@ export default class CreateOrderUI {
       await this.refreshCheckout();
     } else Popup.error(res.message || 'ไม่สามารถชำระเงินได้');
   }
+
+  fmtMoneyTHB(n){
+    return '฿' + Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+
+  async loadBranchBalance(){
+    try {
+        const r = await ApiClient.getBranchBalance(this.branchId);
+        const el = document.getElementById('walletBalance');
+        if (el) el.textContent = this.fmtMoneyTHB(r?.balance || 0);
+    } catch { /* ignore */ }
+    }
+
+    initWalletDropdown(){
+    const btn = document.getElementById('walletBtn');
+    const menu = document.getElementById('walletMenu');
+    const topup = document.getElementById('actTopup');
+    if (!btn || !menu) return;
+
+    btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        menu.classList.toggle('hidden');
+    });
+    document.addEventListener('click', ()=>{
+        if (!menu.classList.contains('hidden')) menu.classList.add('hidden');
+    });
+
+    // ไปหน้าเติมเงิน (ของสาขา)
+    if (topup){
+        topup.addEventListener('click', ()=>{
+        const url = new URL('../pages/branch-topup.html', window.location.href);
+        url.searchParams.set('branchId', String(this.branchId));
+        window.location.href = url.toString();
+        });
+    }
+  }
+
 }

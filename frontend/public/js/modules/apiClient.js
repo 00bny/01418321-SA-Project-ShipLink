@@ -1,4 +1,4 @@
-const API = 'http://localhost:5001';
+const API = 'http://localhost:5000';
 
 async function j(res){
  const txt = await res.text();
@@ -85,5 +85,19 @@ export const ApiClient = {
       body: JSON.stringify({ role, phone, password })
     });
     return j(r);
+  },
+
+  // --- branch wallet ---
+  async getBranchBalance(branchId){
+    const r = await fetch(`${API}/api/branch-wallet/balance?branchId=${encodeURIComponent(branchId)}`);
+    return j(r);
+  },
+  async topupBranch({ branchId, amount, employeeId }){
+    const r = await fetch(`${API}/api/branch-wallet/topup`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ branchId, amount, employeeId })
+    });
+    return j(r);
   }
+
 };
