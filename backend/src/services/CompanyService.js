@@ -19,10 +19,23 @@ class CompanyService {
     return new ShippingCompany(row);
   }
 
-    static async list() {
-        return DB.query('SELECT CompanyID, CompanyName, ShippingRate, SharePercent FROM ShippingCompany ORDER BY CompanyID');
-    }
-
+  static async list() {
+    const sql = `
+      SELECT 
+        c.CompanyID,
+        c.CompanyName,
+        c.ShippingRate,
+        c.SharePercent,
+        COUNT(o.OrderID) AS TotalOrdersPaid
+      FROM ShippingCompany AS c
+      LEFT JOIN \`Order\` AS o 
+        ON o.CompanyID = c.CompanyID
+        AND o.OrderStatus = 'ชำระเงินแล้ว'
+      GROUP BY c.CompanyID, c.CompanyName, c.ShippingRate, c.SharePercent
+      ORDER BY c.CompanyID
+    `;
+    return DB.query(sql);
+  }
 
 }
 module.exports = CompanyService;

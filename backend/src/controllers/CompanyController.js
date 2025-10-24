@@ -1,10 +1,13 @@
 const CompanyService = require('../services/CompanyService');
-class CompanyController {
-  static async list(req, res) {
+const CompanyController = {
+  async list(req, res) {
     try {
-      const rows = await CompanyService.list();
-      res.json(rows);
-    } catch (e) { res.status(500).json({ message: e.message }); }
+      const companies = await CompanyService.list();
+      res.json(companies);
+    } catch (err) {
+      console.error('❌ Error in CompanyController.list:', err);
+      res.status(500).json({ message: 'ไม่สามารถดึงข้อมูลบริษัทขนส่งได้' });
+    }
   }
-}
+};
 module.exports = CompanyController;
