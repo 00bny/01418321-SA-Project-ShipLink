@@ -1,10 +1,15 @@
+// backend/src/index.js
 require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
+const listEndpoints = require('express-list-endpoints');
 const app = express();
 
-app.use(cors());
+// ------------------------------
+// 🔧 Middleware
+// ------------------------------
+app.use(cors({ origin: '*', methods: ['GET','POST','PUT','DELETE'], allowedHeaders: ['Content-Type','Authorization'] }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -13,35 +18,53 @@ app.use((req, _res, next) => {
   next();
 });
 
-const frontendPublic = path.join(__dirname, '..', 'frontend', 'public'); 
+// ------------------------------
+// 🗂 Static
+// ------------------------------
+const frontendPublic = path.join(__dirname, '..', 'frontend', 'public');
+app.use('/public', express.static(frontendPublic));
+app.use('/frontend/public', express.static(frontendPublic));
 
-app.use('/public', express.static(frontendPublic));            // รองรับ /public/...
-app.use('/frontend/public', express.static(frontendPublic));   // รองรับ /frontend/public/...
+// ------------------------------
+// ❤️ Health Check
+// ------------------------------
+app.get('/', (_req, res) => res.send('ShipLink API is running'));
+app.get('/api/ping', (_req, res) => res.json({ ok: true }));
+
+// ------------------------------
+// 🚏 Mount Routes
+// ------------------------------
+console.log('📦 Mounting all routers...');
+
+const pickupRouter = require('./routes/pickupRoutes');
+const companyRouter = require('./routes/companyRoutes');
+
+app.use('/api/pickup', pickupRouter);
+app.use('/api/companies', companyRouter);
 
 
-app.get('/', (_,res)=>res.send('ShipLink API is running'));
-
-app.use('/api/customers', require('./routes/customerRoutes'));
-app.use('/api/orders', require('./routes/orderRoutes'));
-app.use('/api/checkout', require('./routes/checkoutRoutes'));
-app.use('/api/companies', require('./routes/companyRoutes'));
-app.use('/api/quotes', require('./routes/quoteRoutes'));
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/pickup', require('./routes/pickupRoutes'));
-app.use('/api/branch-wallet', require('./routes/branchWalletRoutes'));
-
-app.use('/api', (req, res, next) => {
+// ------------------------------
+// ⚠️ 404 Handler
+// ------------------------------
+app.use((req, res) => {
   res.status(404).json({ message: 'Not Found', path: req.originalUrl });
 });
 
-app.use((err, req, res, next) => {
-  console.error('API Error:', err);
-  const code = err.status || 500;
-  res.status(code).json({
-    message: err.message || 'Internal Server Error',
-    code
-  });
-});
 
+// ------------------------------
+// 🚀 Start Server
+// ------------------------------
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`API on :${PORT}`));
+const HOST = '0.0.0.0';  
+app.listen(PORT, HOST, () => {
+  console.log(`✅ API running on http://${HOST}:${PORT}`);
+  try {
+    const endpoints = listEndpoints(app);
+    console.log('📋 Registered endpoints count:', endpoints.length);
+    for (const e of endpoints) {
+      console.log(`  • ${e.methods.join(',').padEnd(10)} ${e.path}`);
+    }
+  } catch (err) {
+    console.error('❌ express-list-endpoints error:', err);
+  }
+});

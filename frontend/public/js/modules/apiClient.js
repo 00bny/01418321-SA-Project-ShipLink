@@ -1,4 +1,4 @@
-const API = 'http://localhost:5000';
+const API = 'http://localhost:5002';
 
 async function j(res){
  const txt = await res.text();
@@ -90,16 +90,21 @@ export const ApiClient = {
   async createPickupRequest(companyId, employeeId) {
     const r = await fetch(`${API}/api/pickup/request`, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ companyId, employeeId })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ companyId, employeeId }),
     });
-    return j(r);
+    if (!r.ok) throw new Error('Failed to create pickup request');
+    return r.json();
   },
+
 
   async getPickupHistory(branchId) {
     const r = await fetch(`${API}/api/pickup/history?branchId=${branchId}`);
-    return j(r);
+    if (!r.ok) throw new Error('Failed to fetch pickup history');
+    return r.json();
   },
+
+
 
   // --- branch wallet ---
   async getBranchBalance(branchId){

@@ -1,8 +1,13 @@
 import { ApiClient } from './modules/apiClient.js';
 
+// กำหนดค่าจำลองพนักงาน / สาขา
+// -------------------------------------------
+const BRANCH_ID = 1;   // เปลี่ยนได้ถ้ามีระบบ login จริง
+const EMPLOYEE_ID = 1; // จำลองพนักงานที่ล็อกอิน
+
 document.addEventListener('DOMContentLoaded', async () => {
   await loadCompanies();
-  await loadHistory();
+  await loadPickupHistory();
 });
 
 async function loadCompanies() {
@@ -32,7 +37,7 @@ async function loadCompanies() {
       try {
         const res = await ApiClient.createPickupRequest(companyId, employeeId);
         alert(`✅ ${res.message}\n\nสาขา: ${res.branchName}\nออเดอร์ที่รอเข้ารับ: ${res.totalOrders} รายการ`);
-        await loadHistory();
+        await loadPickupHistory();
       } catch (err) {
         alert('❌ ' + (err.message || 'เกิดข้อผิดพลาด'));
       }
@@ -40,28 +45,45 @@ async function loadCompanies() {
   });
 }
 
-async function loadHistory() {
-  const branchId = localStorage.getItem('branchId') || 1;
-  const rows = await ApiClient.getPickupHistory(branchId);
-  const tbody = document.querySelector('#pickup-history-body');
-  if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-gray-400">ยังไม่มีประวัติการเข้ารับ</td></tr>`;
-    return;
-  }
+// --- โหลดประวัติการเรียกรับพัสดุ ---
+async function loadPickupHistory() {
+  const tbody = document.getElementById('pickup-history-body');
+  tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-gray-400">กำลังโหลด...</td></tr>`;
 
-  tbody.innerHTML = rows.map(r => `
-    <tr>
-      <td class="border py-3">${r.RequestID}</td>
-      <td class="border py-3">${r.CompanyName || '-'}</td>
-      <td class="border py-3">${new Date(r.CreatedDate).toLocaleString()}</td>
-      <td class="border py-3">
-        <span class="px-2 py-1 text-xs rounded ${
-          r.RequestStatus === 'Completed'
-            ? 'bg-green-100 text-green-700'
-            : 'bg-yellow-100 text-yellow-700'
-        }">${r.RequestStatus}</span>
-      </td>
-      <td class="border py-3">${r.EmployeeName || '-'}</td>
-    </tr>
-  `).join('');
+  try {
+    const history = await ApiClient.getPickupHistory(BRANCH_ID);
+
+    if (!history.length) {
+      tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-gray-400">ยังไม่มีประวัติการเข้ารับ</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = history.map(item => `
+      <tr class="border-b border-border-light">
+        <td class="py-2">${item.RequestNo}</td>
+        <td class="py-2">${item.ShippingCompany}</td>
+        <td class="py-2">${
+        item.DateTime
+            ? (() => {
+                const d = new Date(item.DateTime);
+                d.setHours(d.getHours() + 5); // ✅ บวกเวลา 5 ชั่วโมง
+                return d.toLocaleString();
+            })()
+            : '-'
+        }</td>
+        <td class="py-2">${item.Status}</td>
+        <td class="py-2">${item.Staff || '-'}</td>
+      </tr>
+    `).join('');
+
+  } catch (err) {
+    console.error('❌ Error loading pickup history:', err);
+    tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-red-500">โหลดข้อมูลไม่สำเร็จ</td></tr>`;
+  }
 }
+
+// --- โหลดทั้งหมดตอนเปิดหน้า ---
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadCompanies();
+  await loadPickupHistory();
+});

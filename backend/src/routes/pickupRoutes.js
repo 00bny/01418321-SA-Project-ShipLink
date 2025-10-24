@@ -1,10 +1,22 @@
-const router = require('express').Router();
+// backend/src/routes/pickupRoutes.js
+const express = require('express');
+const router = express.Router();
 const PickupController = require('../controllers/PickupController');
 
-// POST /api/pickup/request
-router.post('/request', PickupController.createRequest);
+console.log('✅ pickupRoutes.js loaded');
 
-// GET /api/pickup/history?branchId=1
-router.get('/history', PickupController.listHistory);
+// test route เพื่อตรวจสอบว่า router นี้ถูก mount จริง
+router.get('/test', (_req, res) => {
+  console.log('📦 /api/pickup/test called');
+  res.json({ message: 'Pickup route test success ✅' });
+});
+
+// เส้นทางจริง
+router.get('/history', PickupController.getPickupHistory);
+router.post('/request', PickupController.createPickupRequest);
+
+console.log('📁 pickupRoutes path loaded from:', __filename);
+const listEndpoints = require('express-list-endpoints');
+console.log('🧾 pickupRoutes endpoints:', listEndpoints(router));
 
 module.exports = router;
