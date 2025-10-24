@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShipLink • Pickup Request</title>
+
+  <!-- Tailwind + Font + Icons -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#2563EB",
+            "background-light": "#F8FAFC",
+            "background-dark": "#0F172A",
+            "sidebar-light": "#FFFFFF",
+            "sidebar-dark": "#0B1220",
+            "text-light": "#0F172A",
+            "text-dark": "#E2E8F0",
+            "input-light": "#F1F5F9",
+            "input-dark": "#334155",
+            "border-light": "#E2E8F0",
+            "border-dark": "#334155",
+            "card-light": "#FFFFFF",
+            "card-dark": "#0F172A",
+          },
+          fontFamily: { display: ["Prompt", "sans-serif"] },
+          borderRadius: { DEFAULT: "0.75rem" }
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body{font-family:'Prompt',sans-serif;min-height:max(884px,100dvh)}
+  </style>
+</head>
+<body class="bg-background-light text-text-light font-display">
+<div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-sidebar-light border-r border-border-light">
+    <div class="p-6">
+      <h1 class="text-2xl font-extrabold">ShipLink</h1>
+    </div>
+    <nav class="mt-4">
+      <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100" href="./dashboard.html">
+        <span class="material-icons">dashboard</span><span class="ml-3">Dashboard</span>
+      </a>
+      <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100" href="./create-order.html">
+        <span class="material-icons">create</span><span class="ml-3">Create Order</span>
+      </a>
+      <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100" href="./all-order.html">
+        <span class="material-icons">all_inbox</span><span class="ml-3">All Order</span>
+      </a>
+      <a class="flex items-center px-6 py-3 bg-blue-50 text-primary font-semibold" href="./pickup.html">
+        <span class="material-icons">inventory</span><span class="ml-3">Pickup</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Content -->
+  <div class="flex-1 flex flex-col">
+    <header class="flex items-center justify-between p-4 bg-white border-b border-border-light">
+      <h2 class="text-2xl font-bold">Pickup Request Management</h2>
+      <div class="flex items-center space-x-3">
+        <button class="flex items-center bg-green-100 text-green-700 px-4 py-2 rounded-lg">
+          <span>$1,250.00</span><span class="material-icons ml-1">arrow_drop_down</span>
+        </button>
+        <img src="https://i.pravatar.cc/80" class="w-10 h-10 rounded-full" alt="avatar">
+      </div>
+    </header>
+
+    <main class="flex-1 p-6 space-y-6">
+
+      <!-- Section: Company List -->
+      <section class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-lg font-semibold mb-4">เรียกขนส่งเข้ารับ</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-center border border-border-light">
+            <thead class="bg-gray-100 text-slate-600">
+              <tr>
+                <th class="py-3 border">บริษัทขนส่ง</th>
+                <th class="py-3 border">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="pickup-table-body">
+              <tr><td colspan="2" class="py-4 text-gray-400">กำลังโหลด...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section: Pickup History -->
+      <section class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-lg font-semibold mb-4">ประวัติการเรียกรับพัสดุ</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-center border border-border-light">
+            <thead class="bg-gray-100 text-slate-600">
+              <tr>
+                <th class="py-3 border">Booking No.</th>
+                <th class="py-3 border">Shipping Company</th>
+                <th class="py-3 border">Date/Time</th>
+                <th class="py-3 border">Status</th>
+                <th class="py-3 border">Staff</th>
+              </tr>
+            </thead>
+            <tbody id="pickup-history-body">
+              <tr><td colspan="5" class="py-4 text-gray-400">ยังไม่มีประวัติการเข้ารับ</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script type="module" src="../js/pickup.js"></script>
+</body>
+</html>

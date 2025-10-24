@@ -87,6 +87,20 @@ export const ApiClient = {
     return j(r);
   },
 
+  async createPickupRequest(companyId, employeeId) {
+    const r = await fetch(`${API}/api/pickup/request`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ companyId, employeeId })
+    });
+    return j(r);
+  },
+
+  async getPickupHistory(branchId) {
+    const r = await fetch(`${API}/api/pickup/history?branchId=${branchId}`);
+    return j(r);
+  },
+
   // --- branch wallet ---
   async getBranchBalance(branchId){
     const r = await fetch(`${API}/api/branch-wallet/balance?branchId=${encodeURIComponent(branchId)}`);
