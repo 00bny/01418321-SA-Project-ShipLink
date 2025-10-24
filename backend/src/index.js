@@ -27,6 +27,7 @@ app.use('/api/checkout', require('./routes/checkoutRoutes'));
 app.use('/api/companies', require('./routes/companyRoutes'));
 app.use('/api/quotes', require('./routes/quoteRoutes'));
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/pickup', require('./routes/pickupRoutes'));
 
 app.use('/api', (req, res, next) => {
   res.status(404).json({ message: 'Not Found', path: req.originalUrl });
