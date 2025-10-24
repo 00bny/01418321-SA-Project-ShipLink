@@ -117,6 +117,20 @@ export const ApiClient = {
       body: JSON.stringify({ branchId, amount, employeeId })
     });
     return j(r);
-  }
+  },
+
+  async withdrawBranch({ branchId, amount, employeeId }){
+    const r = await fetch(`${API}/api/branch-wallet/withdraw`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ branchId, amount, employeeId })
+    });
+    return j(r);
+  },
+
+  async getBranchTransactions(branchId) {
+    const r = await fetch(`${API}/api/branch-wallet/transactions?branchId=${encodeURIComponent(branchId)}`);
+    return j(r);
+  },
+
 
 };

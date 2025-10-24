@@ -3,26 +3,23 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ShipLink • เติมเงินสาขา</title>
+  <title>ShipLink • ถอนเงินสาขา</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   <script>
     tailwind.config = {
-      darkMode: "class",
       theme: { extend: { colors: {
-        primary:"#2563EB","background-light":"#F8FAFC","sidebar-light":"#FFFFFF",
-        "border-light":"#E2E8F0", "text-light":"#0F172A"
+        primary:"#2563EB","background-light":"#F8FAFC","border-light":"#E2E8F0"
       }, fontFamily:{display:["Prompt","sans-serif"]}, borderRadius:{DEFAULT:"0.75rem"} } }
     };
   </script>
-  <style> body{font-family:'Prompt',sans-serif;min-height:max(884px,100dvh)} </style>
 </head>
-<body class="bg-background-light text-text-light font-display">
+<body class="bg-background-light text-gray-900 font-display">
 <div class="flex min-h-screen">
+
   <!-- Sidebar -->
   <aside class="w-64 bg-sidebar-light border-r border-border-light">
     <div class="p-6">
@@ -43,18 +40,19 @@
   <!-- Content -->
   <div class="flex-1 flex flex-col">
     <header class="flex items-center justify-between p-4 bg-white border-b border-border-light">
-      <h2 class="text-2xl font-bold">เติมเงิน</h2>
+      <h2 class="text-2xl font-bold">ถอนเงิน</h2>
     </header>
 
     <main class="flex-1 p-6">
       <div class="max-w-2xl mx-auto bg-white rounded-xl shadow p-6">
-        <div class="text-2xl font-semibold mb-2">เติมเงินเข้าบัญชี</div>
+        <div class="text-2xl font-semibold mb-2">ถอนเงินจากบัญชี</div>
         <div class="text-sm text-slate-600 mb-4">
           ยอดเงินคงเหลือ: <span id="bal" class="font-semibold text-green-600">฿0.00</span>
         </div>
 
-        <label class="block text-sm font-medium mb-1">จำนวนเงิน</label>
-        <input id="amount" class="w-full px-4 py-2 rounded-md border border-border-light mb-3" placeholder="ระบุจำนวนเงิน" inputmode="decimal">
+        <label class="block text-sm font-medium mb-1">จำนวนเงินที่ต้องการถอน</label>
+        <input id="amount" class="w-full px-4 py-2 rounded-md border border-border-light mb-3"
+          placeholder="ระบุจำนวนเงิน" inputmode="decimal">
 
         <div class="mb-4">
           <div class="text-sm text-slate-600 mb-2">เลือกจำนวนเงิน</div>
@@ -65,12 +63,13 @@
           </div>
         </div>
 
-        <button id="btnConfirm" class="w-full bg-primary text-white font-semibold py-3 rounded-lg">ยืนยันการเติมเงิน</button>
+        <button id="btnConfirm" class="w-full bg-primary text-white font-semibold py-3 rounded-lg">
+          ยืนยันการถอนเงิน
+        </button>
       </div>
     </main>
   </div>
 </div>
-
-<script type="module" src="../js/branch-topup.js"></script>
+<script type="module" src="../js/branch-withdraw.js"></script>
 </body>
 </html>
