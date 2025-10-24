@@ -78,11 +78,13 @@ CREATE TABLE `Order` (
   EmployeeID INT NOT NULL,
   RequestID INT NULL,
   CompanyID INT NOT NULL,
+  BranchID INT NOT NULL,  -- <<<<<< เพิ่มคอลัมน์ BranchID
   FOREIGN KEY (SenderID) REFERENCES Customer(CustomerID),
   FOREIGN KEY (ReceiverID) REFERENCES Customer(CustomerID),
   FOREIGN KEY (EmployeeID) REFERENCES Employee(EmployeeID),
   FOREIGN KEY (RequestID) REFERENCES PickupRequest(RequestID),
-  FOREIGN KEY (CompanyID) REFERENCES ShippingCompany(CompanyID)
+  FOREIGN KEY (CompanyID) REFERENCES ShippingCompany(CompanyID),
+  FOREIGN KEY (BranchID) REFERENCES Branch(BranchID)  -- <<<<<< FK
 );
 
 CREATE TABLE TransactionHist (
@@ -91,8 +93,8 @@ CREATE TABLE TransactionHist (
   TransactionType VARCHAR(64) NOT NULL,
   TransactionDateTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   WalletID INT NOT NULL,
-  EmployeeID INT NOT NULL,
-  BranchID INT NOT NULL,
+  EmployeeID INT NULL,
+  BranchID INT NULL,
   CompanyID INT NULL,
   FOREIGN KEY (WalletID) REFERENCES Wallet(WalletID),
   FOREIGN KEY (EmployeeID) REFERENCES Employee(EmployeeID),
