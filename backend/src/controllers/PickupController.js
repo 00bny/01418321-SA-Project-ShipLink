@@ -16,7 +16,7 @@ const PickupController = {
       const [[countRow]] = await DB.query(`
         SELECT COUNT(*) AS totalPaid
         FROM \`Order\`
-        WHERE CompanyID = ? AND OrderStatus = 'ชำระเงินแล้ว'
+        WHERE CompanyID = ? AND OrderStatus = 'Paid'
       `, [companyId]);
 
       if (countRow.totalPaid === 0) {
@@ -35,7 +35,7 @@ const PickupController = {
       await DB.query(`
         UPDATE \`Order\`
         SET OrderStatus = 'รอเข้ารับ', RequestID = ?
-        WHERE CompanyID = ? AND OrderStatus = 'ชำระเงินแล้ว'
+        WHERE CompanyID = ? AND OrderStatus = 'Paid'
       `, [result.insertId, companyId]);
 
       // 4️⃣ ตอบกลับสำเร็จ

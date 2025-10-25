@@ -36,6 +36,12 @@ app.get('/api/ping', (_req, res) => res.json({ ok: true }));
 // ----------------------------------------------
 // 🚏 API Routes ✅ (ต้องมาก่อน 404)
 // ----------------------------------------------
+app.use('/api/customers', require('./routes/customerRoutes'));
+app.use('/api/orders', require('./routes/orderRoutes'));
+app.use('/api/checkout', require('./routes/checkoutRoutes'));
+app.use('/api/quotes', require('./routes/quoteRoutes'));
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/branch-wallet', require('./routes/branchWalletRoutes'));
 app.use('/api/pickup', require('./routes/pickupRoutes'));
 app.use('/api/companies', require('./routes/companyRoutes'));
 app.use('/api/company-wallet', require('./routes/walletRoutes'));

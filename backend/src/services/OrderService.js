@@ -6,6 +6,16 @@ function calcShipCost({ width, height, length, weight, rate }) {
   return +(billWeight * rate).toFixed(2);
 }
 
+const STATUS_TH = {
+  Pending   : 'รอชำระเงิน',
+  Paid      : 'ชำระเงินแล้ว',
+  Pickup    : 'เข้ารับพัสดุแล้ว',
+  'In Transit': 'อยู่ระหว่างจัดส่ง',
+  Success   : 'จัดส่งเสร็จสิ้น',
+  Fail      : 'จัดส่งไม่สำเร็จ',
+  Return    : 'ตีกลับ'
+};
+
 class OrderService {
   static async resolveBranchId({ branchId, employeeId }) {
     if (branchId) return branchId;
@@ -44,7 +54,6 @@ class OrderService {
     parcelType, width, height, length, weight, addOnCost = 0,
     branchId
   }) {
-    // อนุญาตอัปเดตเฉพาะ Pending
     const cur = await this.getById(orderId);
     if (!cur) throw new Error('Order not found');
     if (cur.OrderStatus !== 'Pending') throw new Error('Cannot edit non-pending order');
@@ -81,6 +90,35 @@ class OrderService {
       [branchId]
     );
   }
+
+  static async listByBranch(branchId) {
+    const sql = `
+      SELECT
+        o.OrderID, o.OrderStatus, o.OrderDate, o.UpdatedAt,
+        c.CustomerName AS SenderName,
+        e.EmployeeName,
+        s.CompanyName
+      FROM \`Order\` o
+      JOIN Customer c ON c.CustomerID = o.SenderID
+      LEFT JOIN Employee e ON e.EmployeeID = o.EmployeeID
+      LEFT JOIN ShippingCompany s ON s.CompanyID = o.CompanyID
+      WHERE o.BranchID = ?
+      ORDER BY o.OrderID DESC
+    `;
+    const rows = await DB.query(sql, [branchId]);
+
+    return rows.map(r => ({
+      orderId: r.OrderID,
+      status: r.OrderStatus,
+      statusTH: STATUS_TH[r.OrderStatus] || r.OrderStatus,
+      senderName: r.SenderName || '-',
+      employeeName: r.EmployeeName || '-',
+      companyName: r.CompanyName || '-',
+      orderDate: r.OrderDate ? new Date(r.OrderDate) : null,
+      updatedAt: r.UpdatedAt ? new Date(r.UpdatedAt) : null
+    }));
+  }
+
 }
 
 module.exports = OrderService;

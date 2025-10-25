@@ -42,6 +42,14 @@ class OrderController {
       res.json(rows);
     } catch (e) { res.status(500).json({ message: e.message }); }
   }
+
+  static async listByBranch(req, res) {
+    try {
+      const branchId = Number(req.query.branchId || 1);
+      const rows = await OrderService.listByBranch(branchId);
+      res.json(rows);
+    } catch (e) { res.status(500).json({ message: e.message }); }
+  }
 }
 
 module.exports = OrderController;

@@ -62,7 +62,7 @@ CREATE TABLE PickupRequest (
 CREATE TABLE `Order` (
   OrderID INT AUTO_INCREMENT PRIMARY KEY,
   TrackingNumber VARCHAR(64) NULL,
-  OrderStatus VARCHAR(64) NOT NULL DEFAULT 'Pending',
+  OrderStatus VARCHAR(64) NOT NULL DEFAULT 'Pending', -- รอชำระเงิน (Pending) > ชำระเงินแล้ว (Paid) > เข้ารับพัสดุแล้ว (Pickup) > อยู่ระหว่างจัดส่ง (In Transit) > จัดส่งเสร็จสิน (Success) / จัดส่งไม่สำเร็จ (Fail) / ตีกลับ (Return)
   OrderDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   ParcelType VARCHAR(64) NOT NULL,
   Width DECIMAL(8,2) NOT NULL DEFAULT 0,
@@ -71,20 +71,20 @@ CREATE TABLE `Order` (
   Length DECIMAL(8,2) NOT NULL DEFAULT 0,
   ShipCost DECIMAL(10,2) NOT NULL DEFAULT 0,
   AddOnCost DECIMAL(10,2) NOT NULL DEFAULT 0,
-  UpdatedAt DATETIME NULL ON UPDATE CURRENT_TIMESTAMP,
+  UpdatedAt DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   IsReturnContacted BOOLEAN NULL,
   SenderID INT NOT NULL,
   ReceiverID INT NOT NULL,
   EmployeeID INT NOT NULL,
   RequestID INT NULL,
   CompanyID INT NOT NULL,
-  BranchID INT NOT NULL,  -- <<<<<< เพิ่มคอลัมน์ BranchID
+  BranchID INT NOT NULL,
   FOREIGN KEY (SenderID) REFERENCES Customer(CustomerID),
   FOREIGN KEY (ReceiverID) REFERENCES Customer(CustomerID),
   FOREIGN KEY (EmployeeID) REFERENCES Employee(EmployeeID),
   FOREIGN KEY (RequestID) REFERENCES PickupRequest(RequestID),
   FOREIGN KEY (CompanyID) REFERENCES ShippingCompany(CompanyID),
-  FOREIGN KEY (BranchID) REFERENCES Branch(BranchID)  -- <<<<<< FK
+  FOREIGN KEY (BranchID) REFERENCES Branch(BranchID)
 );
 
 CREATE TABLE TransactionHist (

@@ -19,7 +19,7 @@ class PickupService {
       const [[{ count }]] = await conn.execute(`
         SELECT COUNT(*) AS count
         FROM \`Order\`
-        WHERE CompanyID = ? AND OrderStatus = 'ชำระเงินแล้ว'
+        WHERE CompanyID = ? AND OrderStatus = 'Paid'
       `, [companyId]);
 
       if (count === 0) throw new Error('ไม่มีออเดอร์ที่รอเข้ารับ');
