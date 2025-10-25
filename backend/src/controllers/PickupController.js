@@ -141,6 +141,14 @@ const PickupController = {
     try {
         const requestId = req.params.id;
         await PickupService.completePickup(requestId);
+
+        // 2️⃣ อัปเดตสถานะของออร์เดอร์ที่อยู่ในคำขอนี้
+        await DB.query(`
+            UPDATE \`Order\`
+            SET OrderStatus = 'เข้ารับสำเร็จ'
+            WHERE RequestID = ?
+        `, [requestId]);
+
         res.json({ message: 'อัปเดตสถานะเป็น เข้ารับสำเร็จ' });
     } catch (error) {
         console.error("completePickup Error:", error);
