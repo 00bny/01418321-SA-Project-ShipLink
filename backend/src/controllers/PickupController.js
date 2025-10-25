@@ -35,7 +35,7 @@ const PickupController = {
       // 3️⃣ อัปเดตสถานะออร์เดอร์ของบริษัทนี้เป็น “รอเข้ารับ”
       await DB.query(`
         UPDATE \`Order\`
-        SET OrderStatus = 'รอเข้ารับ', RequestID = ?
+        SET OrderStatus = 'RequestedPickup', RequestID = ?
         WHERE CompanyID = ? AND OrderStatus = 'Paid'
       `, [result.insertId, companyId]);
 
@@ -123,12 +123,12 @@ const PickupController = {
         WHERE RequestID = ?
       `, [time, name, phone, requestId]);
 
-      // 2️⃣ อัปเดตสถานะของออร์เดอร์ที่อยู่ในคำขอนี้
-      await DB.query(`
-        UPDATE \`Order\`
-        SET OrderStatus = 'กำลังเข้ารับ'
-        WHERE RequestID = ?
-      `, [requestId]);
+    //   // 2️⃣ อัปเดตสถานะของออร์เดอร์ที่อยู่ในคำขอนี้
+    //   await DB.query(`
+    //     UPDATE \`Order\`
+    //     SET OrderStatus = 'กำลังเข้ารับ'
+    //     WHERE RequestID = ?
+    //   `, [requestId]);
 
       res.json({ message: 'ยืนยันคำเรียกเสร็จสิ้น' });
     } catch (err) {
@@ -145,7 +145,7 @@ const PickupController = {
         // 2️⃣ อัปเดตสถานะของออร์เดอร์ที่อยู่ในคำขอนี้
         await DB.query(`
             UPDATE \`Order\`
-            SET OrderStatus = 'เข้ารับสำเร็จ'
+            SET OrderStatus = 'Pickup'
             WHERE RequestID = ?
         `, [requestId]);
 

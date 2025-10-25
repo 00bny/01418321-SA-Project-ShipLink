@@ -30,7 +30,7 @@ class CompanyService {
       FROM ShippingCompany AS c
       LEFT JOIN \`Order\` AS o 
         ON o.CompanyID = c.CompanyID
-        AND o.OrderStatus = 'ชำระเงินแล้ว'
+        AND o.OrderStatus = 'Paid'
       GROUP BY c.CompanyID, c.CompanyName, c.ShippingRate, c.SharePercent
       ORDER BY c.CompanyID
     `;
