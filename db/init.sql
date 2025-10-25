@@ -103,7 +103,10 @@ CREATE TABLE TransactionHist (
 );
 
 ALTER TABLE `Order`
-ADD COLUMN FailReason TEXT NULL AFTER OrderStatus;
+ADD COLUMN FailReason TEXT NULL;
+
+ALTER TABLE `Order`
+ADD COLUMN ReturnCount INT NULL;
 
 -- ---- Seed ----
 INSERT INTO Wallet (Balance) VALUES (1000.00);
