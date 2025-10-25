@@ -81,11 +81,21 @@ class PickupService {
   static async confirmPickup({ requestId, time, name, phone }) {
     await DB.query(
       `UPDATE PickupRequest
-       SET ScheduledPickupTime=?, PickupStaffName=?, PickupStaffPhone=?, RequestStatus='ยืนยันเข้ารับ'
+       SET ScheduledPickupTime=?, PickupStaffName=?, PickupStaffPhone=?, RequestStatus='กำลังเข้ารับ'
        WHERE RequestID=?`,
       [time, name, phone, requestId]
     );
   }  
+
+  static async completePickup(requestId) {
+    await DB.query(`
+        UPDATE PickupRequest
+        SET RequestStatus = 'เข้ารับสำเร็จ',
+            ActualPickupTime = NOW()
+        WHERE RequestID = ?
+    `, [requestId]);
+  }
+
 }
 
 module.exports = PickupService;

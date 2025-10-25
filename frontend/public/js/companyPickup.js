@@ -91,7 +91,6 @@ function initFilters() {
   searchInput.addEventListener('input', () => renderFilteredRequests());
 }
 
-// ✅ ฟังก์ชันแสดงผลหลังกรอง
 function renderFilteredRequests() {
   const searchValue = document.getElementById('searchInput').value.trim().toLowerCase();
   let filtered = allRequests.filter(r => {
@@ -105,36 +104,75 @@ function renderFilteredRequests() {
     return;
   }
 
-  tbody.innerHTML = filtered.map(r => `
-    <tr class="border-b">
-      <td class="py-2 border">${r.RequestID}</td>
-      <td class="py-2 border">${new Date(r.CreatedDate).toLocaleString('th-TH')}</td>
-      <td class="py-2 border">${r.ParcelCount ?? 0}</td>
-      <td class="py-2 border">${r.RequestStatus}</td>
-      <td class="py-2 border">
+  tbody.innerHTML = filtered.map(r => {
+    let actionBtn = '';
+
+    if (r.RequestStatus === 'รอเข้ารับ') {
+      actionBtn = `
         <button 
           class="bg-primary hover:bg-blue-700 text-white font-medium text-sm px-4 py-1.5 rounded btn-assign"
           data-id="${r.RequestID}" data-status="${r.RequestStatus}">
-          รับคำเรียก
-        </button>
-      </td>
-    </tr>
-  `).join('');
+          ยอมรับคำเรียก
+        </button>`;
+    } else if (r.RequestStatus === 'กำลังเข้ารับ') {
+      actionBtn = `
+        <button
+          class="bg-green-600 hover:bg-green-700 text-white font-medium text-sm px-4 py-1.5 rounded btn-complete"
+          data-id="${r.RequestID}">
+          ยืนยันเข้ารับแล้ว
+        </button>`;
+    } else if (r.RequestStatus === 'เข้ารับสำเร็จ') {
+    actionBtn = `<span class="text-green-600 font-semibold">ยืนยันการเข้ารับแล้วเรียบร้อย</span>`;
+    } else {
+      actionBtn = `<span class="text-gray-500">-</span>`;
+    }
 
-  // ตรวจสอบสถานะก่อนเปิด modal
+    return `
+      <tr class="border-b">
+        <td class="py-2 border">${r.RequestID}</td>
+        <td class="py-2 border">${new Date(r.CreatedDate).toLocaleString('th-TH')}</td>
+        <td class="py-2 border">${r.ParcelCount ?? 0}</td>
+        <td class="py-2 border">${r.RequestStatus}</td>
+        <td class="py-2 border">${actionBtn}</td>
+      </tr>`;
+  }).join('');
+
+  // ✅ ปุ่มยอมรับคำเรียก (เปิด modal)
   document.querySelectorAll('.btn-assign').forEach(btn => {
     btn.addEventListener('click', () => {
       const requestId = btn.dataset.id;
-      const status = btn.dataset.status;
-
-      if (status !== 'รอเข้ารับ') {
-        alert(`❌ ไม่สามารถรับคำเรียกนี้ได้\nสถานะปัจจุบัน: "${status}"`);
-        return;
-      }
-
       openModal(requestId);
     });
   });
+
+  document.querySelectorAll('.btn-complete').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const requestId = btn.dataset.id;
+        if (!confirm('ยืนยันว่าพนักงานได้เข้ารับพัสดุแล้วใช่ไหม')) return;
+
+        // ✅ Optimistic UI: ปรับใน allRequests ก่อนเพื่อให้ปุ่มหายทันที
+        const idx = allRequests.findIndex(r => String(r.RequestID) === String(requestId));
+        if (idx !== -1) {
+        allRequests[idx].RequestStatus = 'เข้ารับสำเร็จ';
+        renderFilteredRequests();
+        }
+
+        try {
+        const res = await ApiClient.completePickup(requestId);
+        alert('✅ ' + res.message);
+
+        // ✅ sync กับข้อมูลจริงอีกที (กัน edge case)
+        await loadPickupRequests();
+        } catch (err) {
+        alert('❌ ' + (err.message || 'ไม่สามารถอัปเดตได้'));
+        // rollback ถ้า backend fail
+        if (idx !== -1) {
+            allRequests[idx].RequestStatus = 'กำลังเข้ารับ';
+            renderFilteredRequests();
+        }
+        }
+    });
+});
 }
 
 function openModal(requestId) {

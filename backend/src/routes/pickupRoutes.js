@@ -9,5 +9,6 @@ router.post('/request', PickupController.createPickupRequest);
 // --- ฝั่งบริษัทขนส่ง ---
 router.get('/company/:id', PickupController.getRequestsByCompany);
 router.post('/confirm', PickupController.confirmPickup);
+router.put('/complete/:id', PickupController.completePickup);
 
 module.exports = router;

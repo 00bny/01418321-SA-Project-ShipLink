@@ -173,6 +173,13 @@ export const ApiClient = {
     if (!res.ok) throw new Error('Failed to confirm pickup');
     return await res.json();
   },
+  
+  async completePickup(requestId) {
+    const res = await fetch(`${API}/api/pickup/complete/${requestId}`, {
+      method: 'PUT'
+    });
+    return j(res);
+  },
 
       // --- staff dashboard ---
   async getStaffDashboard(branchId){

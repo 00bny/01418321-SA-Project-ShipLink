@@ -1,4 +1,5 @@
 const DB = require('../config/db');
+const PickupService = require('../services/PickupService');
 
 const PickupController = {
 
@@ -134,7 +135,18 @@ const PickupController = {
       console.error('❌ confirmPickup error:', err);
       res.status(500).json({ message: 'ไม่สามารถอัปเดตคำขอได้' });
     }
-  }
+  },
+
+  async completePickup(req, res) {
+    try {
+        const requestId = req.params.id;
+        await PickupService.completePickup(requestId);
+        res.json({ message: 'อัปเดตสถานะเป็น เข้ารับสำเร็จ' });
+    } catch (error) {
+        console.error("completePickup Error:", error);
+        res.status(500).json({ message: 'ไม่สามารถอัปเดตสถานะได้' });
+    }
+}
 
 };
 
