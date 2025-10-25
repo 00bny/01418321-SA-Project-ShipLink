@@ -63,7 +63,7 @@
         <span class="material-icons">assignment_turned_in</span><span class="ml-3">Delivery Confirmation</span>
       </a>
       <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100" href="./company-return.html">
-      <span class="material-icons">undo</span><span class="ml-3">Return Parcel Report</span>
+      <span class="material-icons">undo</span><span class="ml-3">Return Parcels</span>
       </a>
     </nav>
   </aside>
@@ -114,13 +114,24 @@
 
         <div id="statusMenu"
             class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 
-                   rounded-lg shadow-lg z-10">
-            <a href="#" data-status="all" class="block px-4 py-2 hover:bg-gray-100">สถานะทั้งหมด</a>
-            <a href="#" data-status="รอเข้ารับ" class="block px-4 py-2 hover:bg-gray-100">รอเข้ารับ</a>
-            <a href="#" data-status="กำลังเข้ารับ" class="block px-4 py-2 hover:bg-gray-100">กำลังเข้ารับ</a>
-            <a href="#" data-status="เข้ารับสำเร็จ" class="block px-4 py-2 hover:bg-gray-100">เข้ารับสำเร็จ</a>
-            <a href="#" data-status="ปฏิเสธคำขอ" class="block px-4 py-2 hover:bg-gray-100">ปฏิเสธคำขอ</a>
+                    rounded-lg shadow-lg z-10">
+          <a href="#" data-status="all" class="block px-4 py-2 hover:bg-gray-100">
+            สถานะทั้งหมด
+          </a>
+          <a href="#" data-status="RequestedPickup" class="block px-4 py-2 hover:bg-gray-100">
+            รอเข้ารับ
+          </a>
+          <a href="#" data-status="PickingUp" class="block px-4 py-2 hover:bg-gray-100">
+            กำลังเข้ารับ
+          </a>
+          <a href="#" data-status="PickedUp" class="block px-4 py-2 hover:bg-gray-100">
+            เข้ารับสำเร็จ
+          </a>
+          <a href="#" data-status="Rejected" class="block px-4 py-2 hover:bg-gray-100">
+            ปฏิเสธคำขอ
+          </a>
         </div>
+
     </div>
 
 </div>

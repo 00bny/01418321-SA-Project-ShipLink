@@ -27,7 +27,7 @@ const PickupController = {
       // 2️⃣ สร้างคำร้อง PickupRequest
       const [result] = await DB.query(`
         INSERT INTO PickupRequest (RequestStatus, CreatedDate, CompanyID, EmployeeID)
-        VALUES ('รอเข้ารับ', NOW(), ?, ?)
+        VALUES ('RequestedPickup', NOW(), ?, ?)
       `, [companyId, employeeId]);
 
       if (!result.insertId) throw new Error('Insert failed');
@@ -119,7 +119,7 @@ const PickupController = {
       await DB.query(`
         UPDATE PickupRequest
         SET ScheduledPickupTime = ?, PickupStaffName = ?, 
-            PickupStaffPhone = ?, RequestStatus = 'กำลังเข้ารับ'
+            PickupStaffPhone = ?, RequestStatus = 'PickingUp'
         WHERE RequestID = ?
       `, [time, name, phone, requestId]);
 

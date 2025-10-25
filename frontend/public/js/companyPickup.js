@@ -5,6 +5,13 @@ let tbody, modal, form;
 let allRequests = []; // เก็บข้อมูลทั้งหมด
 let currentStatus = 'all';
 
+// ✅ Map แสดงสถานะเป็นภาษาไทย
+const statusMap = {
+  RequestedPickup: 'รอเข้ารับ',
+  PickingUp: 'กำลังเข้ารับ',
+  PickedUp: 'เข้ารับสำเร็จ',
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
   tbody = document.getElementById('company-pickup-body');
   modal = document.getElementById('confirmModal');
@@ -80,8 +87,8 @@ function initFilters() {
   dropdownMenu.querySelectorAll('a').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
-      currentStatus = a.dataset.status;
-      statusLabel.textContent = currentStatus === 'all' ? 'สถานะ' : a.textContent;
+      currentStatus = a.dataset.status;  // ✅ filter ด้วย key ภาษาอังกฤษ
+      statusLabel.textContent = a.textContent; // ✅ แสดงเป็นภาษาไทย
       dropdownMenu.classList.add('hidden');
       renderFilteredRequests();
     });
@@ -107,21 +114,21 @@ function renderFilteredRequests() {
   tbody.innerHTML = filtered.map(r => {
     let actionBtn = '';
 
-    if (r.RequestStatus === 'รอเข้ารับ') {
+    if (r.RequestStatus === 'RequestedPickup') {
       actionBtn = `
         <button 
           class="bg-primary hover:bg-blue-700 text-white font-medium text-sm px-4 py-1.5 rounded btn-assign"
           data-id="${r.RequestID}" data-status="${r.RequestStatus}">
           ยอมรับคำเรียก
         </button>`;
-    } else if (r.RequestStatus === 'กำลังเข้ารับ') {
+    } else if (r.RequestStatus === 'PickingUp') {
       actionBtn = `
         <button
           class="bg-green-600 hover:bg-green-700 text-white font-medium text-sm px-4 py-1.5 rounded btn-complete"
           data-id="${r.RequestID}">
           ยืนยันเข้ารับแล้ว
         </button>`;
-    } else if (r.RequestStatus === 'เข้ารับสำเร็จ') {
+    } else if (r.RequestStatus === 'PickedUp') {
     actionBtn = `<span class="text-green-600 font-semibold">ยืนยันการเข้ารับแล้วเรียบร้อย</span>`;
     } else {
       actionBtn = `<span class="text-gray-500">-</span>`;
@@ -132,7 +139,7 @@ function renderFilteredRequests() {
         <td class="py-2 border">${r.RequestID}</td>
         <td class="py-2 border">${new Date(r.CreatedDate).toLocaleString('th-TH')}</td>
         <td class="py-2 border">${r.ParcelCount ?? 0}</td>
-        <td class="py-2 border">${r.RequestStatus}</td>
+        <td class="py-2 border text-center">${statusMap[r.RequestStatus] || '-'}</td>
         <td class="py-2 border">${actionBtn}</td>
       </tr>`;
   }).join('');
@@ -153,7 +160,7 @@ function renderFilteredRequests() {
         // ✅ Optimistic UI: ปรับใน allRequests ก่อนเพื่อให้ปุ่มหายทันที
         const idx = allRequests.findIndex(r => String(r.RequestID) === String(requestId));
         if (idx !== -1) {
-        allRequests[idx].RequestStatus = 'เข้ารับสำเร็จ';
+        allRequests[idx].RequestStatus = 'PickedUp';
         renderFilteredRequests();
         }
 
@@ -167,7 +174,7 @@ function renderFilteredRequests() {
         alert('❌ ' + (err.message || 'ไม่สามารถอัปเดตได้'));
         // rollback ถ้า backend fail
         if (idx !== -1) {
-            allRequests[idx].RequestStatus = 'กำลังเข้ารับ';
+            allRequests[idx].RequestStatus = 'PickingUp';
             renderFilteredRequests();
         }
         }

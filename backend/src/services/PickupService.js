@@ -81,7 +81,7 @@ class PickupService {
   static async confirmPickup({ requestId, time, name, phone }) {
     await DB.query(
       `UPDATE PickupRequest
-       SET ScheduledPickupTime=?, PickupStaffName=?, PickupStaffPhone=?, RequestStatus='กำลังเข้ารับ'
+       SET ScheduledPickupTime=?, PickupStaffName=?, PickupStaffPhone=?, RequestStatus='PickingUp'
        WHERE RequestID=?`,
       [time, name, phone, requestId]
     );
@@ -90,7 +90,7 @@ class PickupService {
   static async completePickup(requestId) {
     await DB.query(`
         UPDATE PickupRequest
-        SET RequestStatus = 'เข้ารับสำเร็จ',
+        SET RequestStatus = 'PickedUp',
             ActualPickupTime = NOW()
         WHERE RequestID = ?
     `, [requestId]);
