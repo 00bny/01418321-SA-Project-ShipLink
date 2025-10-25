@@ -89,6 +89,14 @@ export const ApiClient = {
     });
     return j(r);
   },
+  async registerEmployee(payload){
+    const r = await fetch('http://localhost:5000/api/auth/register/employee', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return r.json();
+  },
   async registerCompany({ name, phone, password, shippingRate, sharePercent, walletId }) {
     const r = await fetch(`${API}/api/auth/register/company`, {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -120,8 +128,6 @@ export const ApiClient = {
     if (!r.ok) throw new Error('Failed to fetch pickup history');
     return r.json();
   },
-
-
 
   // --- branch wallet ---
   async getBranchBalance(branchId){
@@ -181,6 +187,13 @@ export const ApiClient = {
     const r = await fetch(`${API}/api/dashboard/staff/returns/${orderId}/contacted`, { method:'POST' });
     return j(r);
   },
+
+  // --- manager dashboard ---
+  async getManagerDashboard(branchId){
+    const r = await fetch(`${API}/api/dashboard/manager?branchId=${encodeURIComponent(branchId)}`);
+    return j(r);
+  },
+
 };
 
 // ✅ Company Wallet API

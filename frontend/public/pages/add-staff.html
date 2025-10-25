@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShipLink • New Staff</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme:{ extend:{ colors:{
+        primary:"#2563EB","background-light":"#F8FAFC","sidebar-light":"#FFFFFF","border-light":"#E2E8F0","text-light":"#0F172A"
+      }, fontFamily:{display:["Prompt","sans-serif"]}, borderRadius:{DEFAULT:"0.75rem"} } }
+    };
+  </script>
+  <style>body{font-family:'Prompt',sans-serif;min-height:max(884px,100dvh)}</style>
+</head>
+<body class="bg-background-light text-text-light font-display">
+<div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-sidebar-light border-r border-border-light">
+    <div class="p-6"><h1 class="text-2xl font-extrabold">ShipLink</h1></div>
+    <nav class="mt-4">
+      <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100" href="./dashboard-manager.html">
+        <span class="material-icons">dashboard</span><span class="ml-3">Dashboard</span>
+      </a>
+      <a class="flex items-center px-6 py-3 bg-blue-50 text-primary font-semibold" href="./add-staff.html">
+        <span class="material-icons">person_add</span><span class="ml-3">New Staff</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Content -->
+  <div class="flex-1 flex flex-col">
+    <!-- Header -->
+    <header class="flex items-center justify-between p-4 bg-white border-b border-border-light">
+      <h2 class="text-2xl font-bold">ลงทะเบียนพนักงาน</h2>
+    </header>
+
+    <!-- Main -->
+    <main class="flex-1 p-6 space-y-6">
+      <section class="bg-white rounded-xl shadow p-6 max-w-lg mx-auto">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">ชื่อพนักงาน</label>
+            <input id="name" class="w-full pl-4 py-2 bg-slate-50 border border-border-light rounded-md" placeholder="ชื่อ - นามสกุล">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">เบอร์โทรศัพท์</label>
+            <input id="phone" class="w-full pl-4 py-2 bg-slate-50 border border-border-light rounded-md" placeholder="เช่น 0901234567" inputmode="numeric" pattern="\d*">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">รหัสผ่าน</label>
+            <input id="password" type="password" class="w-full pl-4 py-2 bg-slate-50 border border-border-light rounded-md" placeholder="กรอกรหัสผ่าน">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">ยืนยันรหัสผ่าน</label>
+            <input id="confirm" type="password" class="w-full pl-4 py-2 bg-slate-50 border border-border-light rounded-md" placeholder="ยืนยันรหัสผ่านอีกครั้ง">
+          </div>
+
+          <div class="flex justify-end pt-4">
+            <button id="btnAdd" class="bg-primary text-white font-semibold py-2 px-6 rounded-md hover:bg-blue-700">สร้างบัญชี</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script type="module" src="../js/add-staff.js"></script>
+</body>
+</html>

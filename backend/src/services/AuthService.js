@@ -6,14 +6,14 @@ class AuthService {
   // --- Register ---
   static async registerEmployee({ name, phone, password, position, branchId }) {
     const exists = await EmployeeService.getByPhone(phone);
-    if (exists) { const e = new Error('employee phone already exists'); e.code = 'DUP'; throw e; }
+    if (exists) { const e = new Error('เบอร์โทรศัพท์นี้ถูกลงทะเบียนแล้ว'); e.code = 'DUP'; throw e; }
     const hashed = await bcrypt.hash(password, 10);
     return EmployeeService.create({ name, phone, passwordHash: hashed, position, branchId });
   }
 
   static async registerCompany({ name, phone, password, shippingRate, sharePercent, walletId }) {
     const exists = await CompanyService.getByPhone(phone);
-    if (exists) { const e = new Error('company phone already exists'); e.code = 'DUP'; throw e; }
+    if (exists) { const e = new Error('เบอร์โทรศัพท์นี้ถูกลงทะเบียนแล้ว'); e.code = 'DUP'; throw e; }
     const hashed = await bcrypt.hash(password, 10);
     return CompanyService.create({ name, phone, passwordHash: hashed, shippingRate, sharePercent, walletId });
   }
