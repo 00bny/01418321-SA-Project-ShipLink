@@ -34,16 +34,14 @@ app.get('/', (_req, res) => res.send('ShipLink API is running'));
 app.get('/api/ping', (_req, res) => res.json({ ok: true }));
 
 // ----------------------------------------------
-// 🚏 API Routes
+// 🚏 API Routes ✅ (ต้องมาก่อน 404)
 // ----------------------------------------------
-const pickupRouter = require('./routes/pickupRoutes');
-const companyRouter = require('./routes/companyRoutes');
-
-app.use('/api/pickup', pickupRouter);
-app.use('/api/companies', companyRouter);
+app.use('/api/pickup', require('./routes/pickupRoutes'));
+app.use('/api/companies', require('./routes/companyRoutes'));
+app.use('/api/company-wallet', require('./routes/walletRoutes'));
 
 // ----------------------------------------------
-// ⚠️ 404 Handler
+// ⚠️ 404 Handler ✅ ใช้เป็นตัวสุดท้าย
 // ----------------------------------------------
 app.use((req, res) => {
   res.status(404).json({ message: 'Not Found', path: req.originalUrl });

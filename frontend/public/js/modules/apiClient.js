@@ -151,3 +151,29 @@ export const ApiClient = {
   },
 
 };
+
+// ✅ Company Wallet API
+export const ApiCompanyWallet = {
+  async getBalance(companyId) {
+    const res = await fetch(`${API}/api/company-wallet/${companyId}`);
+    if (!res.ok) throw await res.json();
+    return res.json();
+  },
+
+  async withdraw(companyId, amount) {
+    const res = await fetch(`${API}/api/company-wallet/${companyId}/withdraw`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ amount })
+    });
+    if (!res.ok) throw await res.json();
+    return res.json();
+  },
+
+  async getHistory(companyId) {
+    const res = await fetch(`${API}/api/company-wallet/${companyId}/history`);
+    if (!res.ok) throw await res.json();
+    return res.json();
+  }
+};
+
