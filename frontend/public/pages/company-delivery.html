@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShipLink • Delivery Confirmation</title>
+
+  <!-- Tailwind + Font + Icons -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#2563EB",
+            "background-light": "#F8FAFC",
+            "background-dark": "#0F172A",
+            "sidebar-light": "#FFFFFF",
+            "sidebar-dark": "#0B1220",
+            "text-light": "#0F172A",
+            "text-dark": "#E2E8F0",
+            "input-light": "#F1F5F9",
+            "input-dark": "#334155",
+            "border-light": "#E2E8F0",
+            "border-dark": "#334155",
+            "card-light": "#FFFFFF",
+            "card-dark": "#0F172A",
+          },
+          fontFamily: { display: ["Prompt", "sans-serif"] },
+          borderRadius: { DEFAULT: "0.75rem" }
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body { font-family: 'Prompt',sans-serif;min-height:max(884px,100dvh) }
+    .btn {
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    transition: 0.2s;
+    }
+    .btn-blue { background:#2563EB;color:white }
+    .btn-blue:hover { background:#1E40AF }
+    .btn-green { background:#059669;color:white }
+    .btn-green:hover { background:#047857 }
+    .btn-red { background:#DC2626;color:white }
+    .btn-red:hover { background:#B91C1C }
+  </style>
+</head>
+
+<body class="bg-background-light text-text-light font-display">
+<div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-sidebar-light border-r border-border-light">
+    <div class="p-6">
+      <h1 class="text-2xl font-extrabold">ShipLink</h1>
+    </div>
+    <nav class="mt-4">
+      <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100" href="./company-dashboard.html">
+        <span class="material-icons">dashboard</span><span class="ml-3">Dashboard</span>
+      </a>
+      <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100" href="./company-pickup.html">
+        <span class="material-icons">local_shipping</span><span class="ml-3">Pickup Management</span>
+      </a>
+      <a class="flex items-center px-5 py-3 bg-blue-50 text-primary font-semibold" href="./company-delivery.html">
+        <span class="material-icons">assignment_turned_in</span><span class="ml-3">Delivery Confirmation</span>
+      </a>
+      <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100" href="./company-return.html">
+        <span class="material-icons">undo</span><span class="ml-3">Return Parcel Report</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Content -->
+  <div class="flex-1 flex flex-col">
+    <header class="flex items-center justify-between p-4 bg-white border-b border-border-light">
+      <h2 class="text-2xl font-bold">ยืนยันการจัดส่งพัสดุ</h2>
+
+      <div class="relative">
+        <button id="walletBtn" class="flex items-center bg-green-100 text-green-700 px-4 py-2 rounded-lg">
+          <span id="walletBalance">฿0.00</span>
+          <span class="material-icons ml-1">arrow_drop_down</span>
+        </button>
+
+        <div id="walletMenu"
+          class="hidden absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg border border-slate-200 overflow-hidden z-20">
+          <a id="actWithdraw" class="block px-4 py-2 hover:bg-slate-100 cursor-pointer">ถอนเงิน</a>
+          <a id="actHist" class="block px-4 py-2 hover:bg-slate-100 cursor-pointer">ประวัติธุรกรรม</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 p-6 space-y-6">
+      <section class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-lg font-semibold mb-4">รายการพัสดุจากการเข้ารับ (พร้อมส่ง)</h3>
+        
+            <!-- 🔍 Search + Filter Bar -->
+            <div class="flex items-center justify-between mb-4">
+    
+                <!-- Search (กินพื้นที่ที่เหลือทั้งหมด) -->
+                <div class="relative flex-1">
+                    <span class="material-icons absolute left-2 top-2.5 text-gray-400 text-sm">search</span>
+                    <input id="deliverySearchInput"
+                        type="text"
+                        placeholder="ค้นหาด้วยรหัสออเดอร์, ผู้รับ, ที่อยู่ หรือเบอร์โทร"
+                        class="border border-border-light rounded-lg pl-8 pr-3 py-2 w-full focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                </div>
+
+                <!-- Dropdown Filter -->
+                <div class="relative ml-3">
+                    <button id="deliveryStatusDropdownBtn"
+                        class="border border-border-light bg-gray-50 rounded-lg px-4 py-2 flex items-center hover:bg-gray-100">
+                        <span id="deliveryStatusLabel">สถานะทั้งหมด</span>
+                        <span class="material-icons ml-1 text-gray-500 text-sm">arrow_drop_down</span>
+                    </button>
+                    <div id="deliveryStatusMenu"
+                        class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                        <a href="#" data-status="all" class="block px-4 py-2 hover:bg-gray-100">สถานะทั้งหมด</a>
+                        <a href="#" data-status="Pickup" class="block px-4 py-2 hover:bg-gray-100">เข้ารับพัสดุแล้ว</a>
+                        <a href="#" data-status="In Transit" class="block px-4 py-2 hover:bg-gray-100">อยู่ระหว่างการจัดส่ง</a>
+                        <a href="#" data-status="Success" class="block px-4 py-2 hover:bg-gray-100">จัดส่งสำเร็จ</a>
+                        <a href="#" data-status="Fail" class="block px-4 py-2 hover:bg-gray-100">จัดส่งล้มเหลว</a>
+                    </div>
+                </div>
+
+            </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-center border border-border-light table-fixed">
+            <thead class="bg-gray-100 text-slate-600">
+                <tr>
+                    <th class="py-3 px-2 border w-[10%]">รหัสออเดอร์</th>
+                    <th class="py-3 px-2 border w-[20%]">ผู้รับ</th>
+                    <th class="py-3 px-2 border w-[30%]">ที่อยู่ผู้รับ</th>
+                    <th class="py-3 px-2 border w-[15%]">เบอร์โทรผู้รับ</th>
+                    <th class="py-3 px-2 border w-[10%]">สถานะ</th>
+                    <th class="py-3 px-2 border w-[15%]">การดำเนินการ</th>
+                </tr>
+            </thead>
+            <tbody id="delivery-body">
+              <tr><td colspan="8" class="py-4 text-gray-400">กำลังโหลด...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- Modal: จัดส่งล้มเหลว -->
+<div id="failReasonModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl p-6 w-[380px] shadow-lg">
+    <h3 class="text-lg font-semibold mb-3">สาเหตุในการจัดส่งล้มเหลว</h3>
+    
+    <textarea id="failReasonInput"
+      class="border border-gray-300 rounded-lg w-full p-3 outline-none focus:outline-none focus:ring-0"
+      rows="4"
+      placeholder="กรอกสาเหตุ..."></textarea>
+
+    <div class="flex justify-end gap-2 mt-4">
+      <button id="failCancelBtn" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+        ยกเลิก
+      </button>
+      <button id="failSubmitBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+        ยืนยัน
+      </button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="../js/companyDelivery.js"></script>
+<script type="module">
+  import { initCompanyWalletDropdown } from '../js/company-wallet.js';
+  document.addEventListener('DOMContentLoaded', () => initCompanyWalletDropdown(1));
+</script>
+</body>
+</html>

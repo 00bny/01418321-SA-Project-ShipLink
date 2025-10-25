@@ -201,6 +201,21 @@ export const ApiClient = {
     return j(r);
   },
 
+  async getCompanyPickedOrders(companyId) {
+    const res = await fetch(`${API}/api/orders/company/pickup/${companyId}`);
+    if (!res.ok) throw new Error('Failed to load pickup delivery list');
+    return res.json();
+  },
+
+  async updateOrderStatus(orderId, { status, failReason }) {
+    const res = await fetch(`${API}/api/orders/status/${orderId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status, failReason })
+    });
+    return j(res);
+  }
+
 };
 
 // ✅ Company Wallet API

@@ -102,6 +102,9 @@ CREATE TABLE TransactionHist (
   FOREIGN KEY (CompanyID) REFERENCES ShippingCompany(CompanyID)
 );
 
+ALTER TABLE `Order`
+ADD COLUMN FailReason TEXT NULL AFTER OrderStatus;
+
 -- ---- Seed ----
 INSERT INTO Wallet (Balance) VALUES (1000.00);
 INSERT INTO Branch (BranchName, BranchAddress, WalletID)
