@@ -121,8 +121,6 @@ export const ApiClient = {
     return r.json();
   },
 
-
-
   // --- branch wallet ---
   async getBranchBalance(branchId){
     const r = await fetch(`${API}/api/branch-wallet/balance?branchId=${encodeURIComponent(branchId)}`);
@@ -181,6 +179,13 @@ export const ApiClient = {
     const r = await fetch(`${API}/api/dashboard/staff/returns/${orderId}/contacted`, { method:'POST' });
     return j(r);
   },
+
+  // --- manager dashboard ---
+  async getManagerDashboard(branchId){
+    const r = await fetch(`${API}/api/dashboard/manager?branchId=${encodeURIComponent(branchId)}`);
+    return j(r);
+  },
+
 };
 
 // ✅ Company Wallet API

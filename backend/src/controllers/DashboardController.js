@@ -30,6 +30,16 @@ class DashboardController {
       res.status(400).json({ message: e.message });
     }
   }
+
+  static async managerSummary(req, res) {
+    try {
+      const branchId = Number(req.query.branchId || 1);
+      const data = await DashboardService.getManagerSummary(branchId);
+      res.json(data);
+    } catch (e) {
+      res.status(500).json({ message: e.message });
+    }
+  }
 }
 
 module.exports = DashboardController;
