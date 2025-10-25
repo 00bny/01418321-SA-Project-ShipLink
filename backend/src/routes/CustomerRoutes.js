@@ -1,9 +1,12 @@
 const router = require('express').Router();
 const CustomerController = require('../controllers/CustomerController');
 
-router.get('/search', CustomerController.searchByPhone);   // /api/customers/search?phone=...
-router.post('/', CustomerController.create);               // /api/customers
-router.put('/:phone', CustomerController.updateByPhone);   // /api/customers/:phone
+// /api/customers/search?phone=...
+router.get('/search', CustomerController.searchByPhone);
+// /api/customers
+router.post('/', CustomerController.create);
+// /api/customers/:phone
+router.put('/:phone', CustomerController.updateByPhone);
 router.get('/:id', CustomerController.getById);
 
 module.exports = router;

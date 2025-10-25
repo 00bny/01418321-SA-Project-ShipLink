@@ -1,5 +1,5 @@
 import { ApiClient } from './apiClient.js';
-import { Popup } from './popup.js';
+import { Popup } from './Popup.js';
 
 function fmt(n){
   return '฿' + Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});

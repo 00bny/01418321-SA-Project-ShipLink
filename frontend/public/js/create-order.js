@@ -1,2 +1,2 @@
-import CreateOrderUI from './modules/createOrderUI.js';
+import CreateOrderUI from './modules/CreateOrderUI.js';
 new CreateOrderUI();

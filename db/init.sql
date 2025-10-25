@@ -105,21 +105,38 @@ CREATE TABLE TransactionHist (
 -- ---- Seed ----
 INSERT INTO Wallet (Balance) VALUES (1000.00);
 INSERT INTO Branch (BranchName, BranchAddress, WalletID)
-VALUES ('Main Branch', '123 Main Rd', 1);
+VALUES ('ShipLink Bangkhen', '123 Main Rd', 1);
 
 INSERT INTO Employee (EmployeeName,EmployeePhone,EmployeePassword,EmployeePosition,BranchID)
 VALUES ('Santi','0800000000','hash','Manager',1);
 
-INSERT INTO Wallet (Balance) VALUES (0.00);
+INSERT INTO Employee (EmployeeName,EmployeePhone,EmployeePassword,EmployeePosition,BranchID)
+VALUES ('Nunthaporn Leryotpornchai','0933929164','hash','Staff',1);
+
+INSERT INTO Wallet (Balance) VALUES (645.00);
+INSERT INTO ShippingCompany (CompanyName, CompanyPhone, CompanyPassword, ShippingRate, SharePercent, WalletID)
+VALUES ('Unicorn Express','0987654321','hash',15.00,11.50,2);
+
+INSERT INTO Wallet (Balance) VALUES (500.00);
+INSERT INTO ShippingCompany (CompanyName, CompanyPhone, CompanyPassword, ShippingRate, SharePercent, WalletID)
+VALUES ('Hell Express','0987654322','hash',13.00,12.00,3);
+
+INSERT INTO Wallet (Balance) VALUES (645.00);
 INSERT INTO ShippingCompany (CompanyName, CompanyPhone, CompanyPassword, ShippingRate, WalletID)
-VALUES ('TH01','020000000','hash',15.00,2), ('TH0x','020000001','hash',15.00,2);
+VALUES ('Anaconda Express','0987654323','hash',14.50,4);
+
+INSERT INTO Wallet (Balance) VALUES (1000.00);
+INSERT INTO ShippingCompany (CompanyName, CompanyPhone, CompanyPassword, ShippingRate, WalletID)
+VALUES ('RICH Express','0987654324','hash',13.25,5);
 
 INSERT INTO Customer (CustomerName,CustomerPhone,CustomerAddress)
-VALUES ('Nunthaporn Leryotpornchai','0933329164','123 Bangbuathong Nonthaburi 11110');
+VALUES ('Warali Foochareon','0999999999','123 Somewhere In Bangkok 99999');
 
-INSERT INTO Wallet (Balance) VALUES (0.00);
-INSERT INTO ShippingCompany (CompanyName, CompanyPhone, CompanyPassword, ShippingRate, SharePercent, WalletID)
-VALUES
-('TH01','020000000','hash',15.00,10.00,2),
-('TH0x','020000001','hash',18.00,12.50,2),
-('THPST','020000002','hash',14.00, 8.00,2);
+INSERT INTO `Order` (OrderStatus,OrderDate,ParcelType,Width,Weight,Height,Length,ShipCost,AddOnCost,UpdatedAt,SenderID,ReceiverID,EmployeeID,CompanyID,BranchID)
+VALUES ('Paid',CURRENT_TIMESTAMP,'-',1,1.00,1,1,30.00,0.00,CURRENT_TIMESTAMP,1,1,2,1,1);
+
+INSERT INTO `Order` (TrackingNumber,OrderStatus,OrderDate,ParcelType,Width,Weight,Height,Length,ShipCost,AddOnCost,UpdatedAt,SenderID,ReceiverID,EmployeeID,CompanyID,BranchID)
+VALUES ('TH42354353','In Transit',CURRENT_TIMESTAMP,'-',1,1.00,1,1,30.00,0.00,CURRENT_TIMESTAMP,1,1,2,3,1);
+
+INSERT INTO `Order` (TrackingNumber,OrderStatus,OrderDate,ParcelType,Width,Weight,Height,Length,ShipCost,AddOnCost,UpdatedAt,IsReturnContacted,SenderID,ReceiverID,EmployeeID,CompanyID,BranchID)
+VALUES ('TH34234231','Return',CURRENT_TIMESTAMP,'Document',1,1.00,1,1,30.00,0.00,CURRENT_TIMESTAMP,FALSE,1,1,2,2,1);

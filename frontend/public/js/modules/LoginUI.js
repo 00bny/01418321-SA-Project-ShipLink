@@ -1,4 +1,4 @@
-import { Popup } from './popup.js';
+import { Popup } from './Popup.js';
 import { ApiClient } from './apiClient.js';
 
 export default class LoginUI {

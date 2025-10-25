@@ -168,6 +168,19 @@ export const ApiClient = {
     return await res.json();
   },
 
+      // --- staff dashboard ---
+  async getStaffDashboard(branchId){
+    const r = await fetch(`${API}/api/dashboard/staff?branchId=${encodeURIComponent(branchId)}`);
+    return j(r);
+  },
+  async getReturnFollowups(branchId){
+    const r = await fetch(`${API}/api/dashboard/staff/returns?branchId=${encodeURIComponent(branchId)}`);
+    return j(r);
+  },
+  async markReturnContacted(orderId){
+    const r = await fetch(`${API}/api/dashboard/staff/returns/${orderId}/contacted`, { method:'POST' });
+    return j(r);
+  },
 };
 
 // ✅ Company Wallet API
@@ -192,6 +205,6 @@ export const ApiCompanyWallet = {
     const res = await fetch(`${API}/api/company-wallet/${companyId}/history`);
     if (!res.ok) throw await res.json();
     return res.json();
-  }
+  },
 };
 

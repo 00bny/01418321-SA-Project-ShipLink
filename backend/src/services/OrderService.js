@@ -1,7 +1,7 @@
 const DB = require('../config/DBConnector');
 
 function calcShipCost({ width, height, length, weight, rate }) {
-  const volumetric = (width * height * length) / 5000;
+  const volumetric = (width * height * length) / 5000.00;
   const billWeight = Math.max(weight, volumetric);
   return +(billWeight * rate).toFixed(2);
 }

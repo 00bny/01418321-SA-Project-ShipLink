@@ -1,6 +1,6 @@
-import { $, $$, mute, unmute, scrollToEl, fmtMoney } from './dom.js';
+import { $, $$, mute, unmute, scrollToEl, fmtMoney } from './Dom.js';
 import { ApiClient } from './apiClient.js';
-import { Popup } from './popup.js';
+import { Popup } from './Popup.js';
 
 export default class CreateOrderUI {
   constructor(){

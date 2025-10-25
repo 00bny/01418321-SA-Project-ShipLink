@@ -1,7 +1,7 @@
 const DB = require('../config/DBConnector');
 
 function volumetricKg({ w, h, l }) {
-  const vol = (w * h * l) / 5000;
+  const vol = (w * h * l) / 5000.00;
   return Math.max(vol, 0);
 }
 function calcFor(rate, w, h, l, weight) {
