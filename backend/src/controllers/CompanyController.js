@@ -2,13 +2,11 @@ const DB = require('../config/DBConnector');
 const bcrypt = require('bcryptjs');
 
 class CompanyController {
-  // 🔍 ดึงข้อมูลบริษัทขนส่งจากเบอร์โทร
   static async getByPhone(phone) {
     const [rows] = await DB.query('SELECT * FROM ShippingCompany WHERE CompanyPhone = ?', [phone]);
     return rows?.length ? rows[0] : null;
   }
 
-  // 🧾 สร้างบริษัทขนส่งใหม่
   static async create({ name, phone, passwordHash, shippingRate, sharePercent, walletId }) {
     const conn = await DB.getConnection();
     try {
@@ -37,7 +35,6 @@ class CompanyController {
     }
   }
 
-  // 📦 แสดงรายการบริษัท (สำหรับสาขา)
   static async list(req, res) {
     try {
       const branchId = req.query.branchId;
@@ -65,7 +62,6 @@ class CompanyController {
     }
   }
 
-  // 🧠 ใช้โดย Auth ตอน login
   static async verifyPassword(phone, password) {
     const comp = await CompanyController.getByPhone(phone);
     if (!comp) return null;
