@@ -214,8 +214,26 @@ export const ApiClient = {
       body: JSON.stringify({ status, failReason })
     });
     return j(res);
-  }
+  },
 
+  async getCompanyReturnOrders(companyId) {
+    const r = await fetch(`${API}/api/company/returns/${companyId}`);
+    return j(r);
+  },
+  
+  async getCompanyWallet(companyId) {
+    const r = await fetch(`${API}/api/company/wallet/${companyId}`);
+    return j(r);
+  },
+
+  async updateReturnOrderStatus(orderId, action) {
+    const res = await fetch(`${API}/api/order-status/update/${orderId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action })
+    });
+    return res.json();
+  }
 };
 
 // ✅ Company Wallet API

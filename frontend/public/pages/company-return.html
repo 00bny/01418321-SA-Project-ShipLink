@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShipLink • Return Parcels</title>
+
+  <!-- Tailwind + Font + Icons -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#2563EB",
+            "background-light": "#F8FAFC",
+            "background-dark": "#0F172A",
+            "sidebar-light": "#FFFFFF",
+            "sidebar-dark": "#0B1220",
+            "text-light": "#0F172A",
+            "text-dark": "#E2E8F0",
+            "input-light": "#F1F5F9",
+            "input-dark": "#334155",
+            "border-light": "#E2E8F0",
+            "border-dark": "#334155",
+            "card-light": "#FFFFFF",
+            "card-dark": "#0F172A",
+          },
+          fontFamily: { display: ["Prompt", "sans-serif"] },
+          borderRadius: { DEFAULT: "0.75rem" }
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body{font-family:'Prompt',sans-serif;min-height:max(884px,100dvh)}
+  </style>
+</head>
+
+<body class="bg-background-light text-text-light font-display">
+<div class="flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-sidebar-light border-r border-border-light">
+    <div class="p-6">
+      <h1 class="text-2xl font-extrabold">ShipLink</h1>
+    </div>
+    <nav class="mt-4">
+      <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100" href="./company-dashboard.html">
+        <span class="material-icons">dashboard</span><span class="ml-3">Dashboard</span>
+      </a>
+      <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100" href="./company-pickup.html">
+        <span class="material-icons">local_shipping</span><span class="ml-3">Pickup Management</span>
+      </a>
+      <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100" href="./company-delivery.html">
+        <span class="material-icons">assignment_turned_in</span><span class="ml-3">Delivery Confirmation</span>
+      </a>
+      <a class="flex items-center px-6 py-3 bg-blue-50 text-primary font-semibold" href="./company-return.html">
+        <span class="material-icons">undo</span><span class="ml-3">Return Parcels</span>
+      </a>
+    </nav>
+
+    <div class="w-64 px-6">
+      <button id="btnLogout"
+        class="w-full flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 rounded-lg py-2 font-semibold transition">
+        <span class="material-icons mr-2">logout</span> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Content -->
+  <div class="flex-1 flex flex-col">
+
+    <header class="flex items-center justify-between p-4 bg-white border-b border-border-light">
+      <h2 class="text-2xl font-bold">จัดการพัสดุตีกลับ</h2>
+
+      <div class="relative">
+        <button id="walletBtn" class="flex items-center bg-green-100 text-green-700 px-4 py-2 rounded-lg">
+          <span id="walletBalance">฿0.00</span>
+          <span class="material-icons ml-1">arrow_drop_down</span>
+        </button>
+        <div id="walletMenu"
+          class="hidden absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg border border-slate-200 z-20">
+          <a id="actWithdraw" class="block px-4 py-2 hover:bg-slate-100 cursor-pointer">ถอนเงิน</a>
+          <a id="actHist" class="block px-4 py-2 hover:bg-slate-100 cursor-pointer">ประวัติธุรกรรม</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 p-6 space-y-6">
+      <section class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-lg font-semibold mb-4">รายการพัสดุที่จัดส่งไม่สำเร็จและพัสดุตีกลับ</h3>
+
+        <!-- Search & Filter Bar -->
+        <div class="flex items-center justify-between mb-4">
+          <div class="relative flex-1">
+            <span class="material-icons absolute left-2 top-2.5 text-gray-400 text-sm">search</span>
+            <input id="searchInput"
+              type="text"
+              placeholder="ค้นหาด้วยรหัสออเดอร์, ผู้รับ, ที่อยู่, เบอร์โทร หรือสาเหตุการจัดส่งไม่สำเร็จ"
+              class="border border-border-light rounded-lg pl-8 pr-3 py-2 w-full focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+          </div>
+
+          <div class="relative ml-3">
+            <button id="countDropdownBtn"
+            class="border border-border-light bg-gray-50 rounded-lg px-4 py-2 flex items-center hover:bg-gray-100">
+            <span id="countLabel">จำนวนครั้งการจัดส่งซ้ำ</span>
+            <span class="material-icons ml-1 text-gray-500 text-sm">arrow_drop_down</span>
+            </button>
+
+            <div id="countMenu"
+            class="hidden absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+            <a href="#" data-count="all" class="block px-4 py-2 hover:bg-gray-100">จำนวนครั้งการจัดส่งซ้ำ</a>
+            <a href="#" data-count="0" class="block px-4 py-2 hover:bg-gray-100">จัดส่งซ้ำ 0 ครั้ง</a>
+            <a href="#" data-count="1plus" class="block px-4 py-2 hover:bg-gray-100">จัดส่งซ้ำตั้งแต่ 1 ครั้งขึ้นไป</a>
+            </div>
+          </div>
+
+          <div class="relative ml-3">
+            <button id="statusDropdownBtn"
+              class="border border-border-light bg-gray-50 rounded-lg px-4 py-2 flex items-center hover:bg-gray-100">
+              <span id="statusLabel">สถานะทั้งหมด</span>
+              <span class="material-icons ml-1 text-gray-500 text-sm">arrow_drop_down</span>
+            </button>
+
+            <div id="statusMenu"
+              class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+              <a href="#" data-status="all" class="block px-4 py-2 hover:bg-gray-100">สถานะทั้งหมด</a>
+              <a href="#" data-status="Fail" class="block px-4 py-2 hover:bg-gray-100">จัดส่งไม่สำเร็จ</a>
+              <a href="#" data-status="retrying" class="block px-4 py-2 hover:bg-gray-100">กำลังจัดส่งซ้ำ</a>
+              <a href="#" data-status="Return" class="block px-4 py-2 hover:bg-gray-100">ตีกลับแล้ว</a>
+              <a href="#" data-status="successRetry" class="block px-4 py-2 hover:bg-gray-100">จัดส่งซ้ำสำเร็จ</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-center border border-border-light table-fixed">
+            <thead class="bg-gray-100 text-slate-700">
+              <tr>
+                <th class="py-3 px-2 border w-[8%]">รหัส</th>
+                <th class="py-3 px-2 border w-[15%]">ผู้รับ</th>
+                <th class="py-3 px-2 border w-[25%]">ที่อยู่</th>
+                <th class="py-3 px-2 border w-[12%]">เบอร์โทร</th>
+                <th class="py-3 px-2 border w-[20%]">สาเหตุ</th>
+                <th class="py-3 px-2 border w-[10%]">สถานะ</th>
+                <th class="py-0 px-0 border w-[8%]">จำนวนครั้งการจัดส่งซ้ำ</th>
+                <th class="py-3 px-2 border w-[12%]">การดำเนินการ</th>
+              </tr>
+            </thead>
+            <tbody id="return-body">
+              <tr><td colspan="8" class="py-4 text-gray-400">กำลังโหลด...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </section>
+    </main>
+  </div>
+</div>
+
+<script type="module" src="../js/company-return.js"></script>
+<script type="module">
+  import { initCompanyWalletDropdown } from '../js/company-wallet.js';
+  document.addEventListener('DOMContentLoaded', () => initCompanyWalletDropdown());
+</script>
+
+</body>
+</html>
