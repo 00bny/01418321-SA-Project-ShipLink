@@ -54,20 +54,29 @@ const PickupController = {
   // ======================================================
   // ✅ (11.x) GET /api/pickup/history — ฝั่งพนักงานสาขา
   // ======================================================
-  async getPickupHistory(_req, res) {
+  async getPickupHistory(req, res) {
     try {
+      const branchId = req.query.branchId;
+      if (!branchId) {
+        return res.status(400).json({ message: 'กรุณาระบุ BranchID' });
+      }
+
       const [rows] = await DB.query(`
         SELECT 
           pr.RequestID AS RequestNo,
           sc.CompanyName AS ShippingCompany,
           pr.CreatedDate AS DateTime,
           pr.RequestStatus AS Status,
-          e.EmployeeName AS Staff
+          e.EmployeeName AS Staff,
+          b.BranchName
         FROM PickupRequest pr
         JOIN ShippingCompany sc ON pr.CompanyID = sc.CompanyID
         LEFT JOIN Employee e ON pr.EmployeeID = e.EmployeeID
+        LEFT JOIN Branch b ON e.BranchID = b.BranchID
+        WHERE b.BranchID = ?
         ORDER BY pr.CreatedDate DESC
-      `);
+      `, [branchId]);
+
       res.json(rows);
     } catch (err) {
       console.error('❌ getPickupHistory error:', err);

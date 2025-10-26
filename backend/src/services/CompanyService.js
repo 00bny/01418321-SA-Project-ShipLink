@@ -5,8 +5,7 @@ class CompanyService {
     return rows[0] ? new ShippingCompany(rows[0]) : null;
   }
 
-  static async create({ name, phone, passwordHash, shippingRate = 15.0, sharePercent = 10.0, walletId }) {
-    // ถ้าไม่ส่ง walletId มา จะสร้าง wallet ใหม่ให้ (ค่าเริ่มต้น 0)
+  static async create({ name, phone, passwordHash, shippingRate, sharePercent, walletId }) {
     let wId = walletId;
     if (!wId) {
       const r = await DB.query('INSERT INTO Wallet (Balance) VALUES (0.00)');
@@ -19,7 +18,7 @@ class CompanyService {
     return new ShippingCompany(row);
   }
 
-  static async list() {
+  static async list(branchId) {
     const sql = `
       SELECT 
         c.CompanyID,
@@ -31,10 +30,11 @@ class CompanyService {
       LEFT JOIN \`Order\` AS o 
         ON o.CompanyID = c.CompanyID
         AND o.OrderStatus = 'Paid'
+        AND o.BranchID = ?
       GROUP BY c.CompanyID, c.CompanyName, c.ShippingRate, c.SharePercent
       ORDER BY c.CompanyID
     `;
-    return DB.query(sql);
+    return DB.query(sql, [branchId]);
   }
 
 }

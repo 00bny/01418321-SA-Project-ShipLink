@@ -33,7 +33,6 @@ class AuthService {
           EmployeePosition: emp.EmployeePosition,
           BranchID: emp.BranchID
         },
-        // อนาคต: สามารถ map path ตามตำแหน่ง (Manager/Staff) ได้ที่นี่
       };
     } else if (role === 'company') {
       const comp = await CompanyService.getByPhone(phone);

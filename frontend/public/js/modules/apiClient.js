@@ -30,6 +30,11 @@ export const ApiClient = {
     return j(r);
   },
 
+  async getCompaniesByBranch(branchId) {
+    const r = await fetch(`${API}/api/companies?branchId=${encodeURIComponent(branchId)}`);
+    return j(r);
+  },
+
   async getQuotes(payload){
     const r = await fetch(`${API}/api/quotes`,{
       method:'POST', headers:{'Content-Type':'application/json'},
