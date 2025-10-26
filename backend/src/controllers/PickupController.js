@@ -8,7 +8,7 @@ const PickupController = {
   // ======================================================
   async createPickupRequest(req, res) {
     try {
-      const { companyId, employeeId } = req.body;
+      const { companyId, employeeId, branchId } = req.body;
       if (!companyId) {
         return res.status(400).json({ message: 'Company ID required' });
       }
@@ -26,9 +26,9 @@ const PickupController = {
 
       // 2️⃣ สร้างคำร้อง PickupRequest
       const [result] = await DB.query(`
-        INSERT INTO PickupRequest (RequestStatus, CreatedDate, CompanyID, EmployeeID)
-        VALUES ('RequestedPickup', DATE_ADD(NOW(), INTERVAL 7 HOUR), ?, ?)
-      `, [companyId, employeeId]);
+        INSERT INTO PickupRequest (RequestStatus, CreatedDate, CompanyID, EmployeeID, BranchID)
+        VALUES ('RequestedPickup', DATE_ADD(NOW(), INTERVAL 7 HOUR), ?, ?, ?)
+      `, [companyId, employeeId, branchId]);
 
       if (!result.insertId) throw new Error('Insert failed');
 
@@ -65,15 +65,16 @@ const PickupController = {
         SELECT 
           pr.RequestID AS RequestNo,
           sc.CompanyName AS ShippingCompany,
-          pr.CreatedDate AS DateTime,
+          pr.CreatedDate AS CreatedTime,
+          pr.ScheduledPickupTime AS ScheduledTime,
+          pr.ActualPickupTime AS ActualTime,
           pr.RequestStatus AS Status,
-          e.EmployeeName AS Staff,
-          b.BranchName
+          COALESCE(pr.PickupStaffName, '-') AS PickupStaff,
+          COALESCE(pr.PickupStaffPhone, '-') AS PickupStaffPhone
         FROM PickupRequest pr
         JOIN ShippingCompany sc ON pr.CompanyID = sc.CompanyID
         LEFT JOIN Employee e ON pr.EmployeeID = e.EmployeeID
-        LEFT JOIN Branch b ON e.BranchID = b.BranchID
-        WHERE b.BranchID = ?
+        WHERE pr.BranchID = ?
         ORDER BY pr.CreatedDate DESC
       `, [branchId]);
 

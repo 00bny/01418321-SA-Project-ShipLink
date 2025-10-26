@@ -83,7 +83,7 @@ async function loadCompanies() {
 
       if (!confirm(`ต้องการเรียกขนส่ง "${company.CompanyName}" ?\nจำนวนออร์เดอร์ที่ชำระแล้ว: ${totalPaid}`)) return;
       try {
-        const res = await ApiClient.createPickupRequest(companyId, EMPLOYEE_ID);
+        const res = await ApiClient.createPickupRequest(companyId, EMPLOYEE_ID, BRANCH_ID);
         alert(`✅ ${res.message}`);
         await loadPickupHistory();
         await loadCompanies();
@@ -113,13 +113,13 @@ function formatDateTimeLocal(value) {
 // ------------------------------
 async function loadPickupHistory() {
   const tbody = document.getElementById('pickup-history-body');
-  tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-gray-400">กำลังโหลด...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="8" class="py-4 text-gray-400">กำลังโหลด...</td></tr>`;
 
   try {
     const history = await ApiClient.getPickupHistory(BRANCH_ID);
 
     if (!history.length) {
-      tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-gray-400">ยังไม่มีประวัติการเข้ารับ</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="py-4 text-gray-400">ยังไม่มีประวัติการเข้ารับ</td></tr>`;
       return;
     }
 
@@ -127,13 +127,16 @@ async function loadPickupHistory() {
       <tr class="border-b">
         <td class="py-2">${item.RequestNo}</td>
         <td class="py-2">${item.ShippingCompany}</td>
-        <td class="py-2">${formatDateTimeLocal(item.DateTime)}</td>
+        <td class="py-2">${formatDateTimeLocal(item.CreatedTime)}</td>
+        <td class="py-2">${formatDateTimeLocal(item.ScheduledTime) || '-'}</td>
+        <td class="py-2">${formatDateTimeLocal(item.ActualTime) || '-'}</td>
         <td class="py-2">${item.Status}</td>
-        <td class="py-2">${item.Staff || '-'}</td>
+        <td class="py-2">${item.PickupStaff || '-'}</td>
+        <td class="py-2">${item.PickupStaffPhone || '-'}</td>
       </tr>
     `).join('');
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-red-500">โหลดข้อมูลล้มเหลว</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="py-4 text-red-500">โหลดข้อมูลล้มเหลว</td></tr>`;
   }
 }
 
