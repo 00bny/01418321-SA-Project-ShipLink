@@ -7,6 +7,15 @@ let allOrders = [];
 let currentFilter = "all";
 let currentFailOrderId = null;
 
+const statusMap = { 
+  // เข้ารับพัสดุแล้ว อยู่ระหว่างจัดส่ง จัดส่งเสร็จสิ้น จัดส่งไม่สำเร็จ ตีกลับ
+  Pickup: "เข้ารับพัสดุแล้ว",
+  "In Transit": "อยู่ระหว่างจัดส่ง",
+  Success: "จัดส่งสำเร็จ",
+  Fail: "จัดส่งไม่สำเร็จ",
+  Return: "ตีกลับแล้ว"
+};
+
 document.addEventListener("DOMContentLoaded", async () => {
   tbody = document.getElementById("delivery-body");
 
@@ -62,7 +71,7 @@ function renderOrders() {
         <td class="py-2 border">${o.ReceiverName}</td>
         <td class="py-2 border">${o.ReceiverAddress}</td>
         <td class="py-2 border text-center">${o.ReceiverPhone}</td>
-        <td class="py-2 border text-center">${o.OrderStatus}</td>
+        <td class="py-2 border text-center">${statusMap[o.OrderStatus] || o.OrderStatus}</td>
         <td class="py-2 border text-center">${renderActionButtons(o)}</td>
     </tr>
   `).join("");

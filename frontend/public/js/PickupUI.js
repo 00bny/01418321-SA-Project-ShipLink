@@ -9,6 +9,13 @@ function getQuery(name){ return new URLSearchParams(window.location.search).get(
 const BRANCH_ID = Number(getQuery('branchId') || 1);
 const EMPLOYEE_ID = Number(getQuery('employeeId') || 2);
 
+// ✅ Map แสดงสถานะเป็นภาษาไทย
+const statusMap = {
+  RequestedPickup: 'รอเข้ารับ',
+  PickingUp: 'กำลังเข้ารับ',
+  PickedUp: 'เข้ารับสำเร็จ',
+};
+
 // ------------------------------
 // 💰 Wallet helper
 // ------------------------------
@@ -130,7 +137,7 @@ async function loadPickupHistory() {
         <td class="py-2">${formatDateTimeLocal(item.CreatedTime)}</td>
         <td class="py-2">${formatDateTimeLocal(item.ScheduledTime) || '-'}</td>
         <td class="py-2">${formatDateTimeLocal(item.ActualTime) || '-'}</td>
-        <td class="py-2">${item.Status}</td>
+        <td class="py-2">${statusMap[item.Status] || '-'}</td>
         <td class="py-2">${item.PickupStaff || '-'}</td>
         <td class="py-2">${item.PickupStaffPhone || '-'}</td>
       </tr>
