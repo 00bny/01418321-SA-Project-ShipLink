@@ -6,34 +6,41 @@ class CompanyDashboardController {
     try {
       const companyId = req.params.companyId;
 
+      // ✅ พัสดุวันนี้
       const [todayRows] = await DB.query(`
         SELECT COUNT(*) AS cnt
-        FROM \`Order\`
-        WHERE CompanyID=? AND DATE(UpdatedAt)=CURDATE()
-        `, [companyId]);
+        FROM \`Order\` O
+        JOIN PickupRequest PR ON O.RequestID = PR.RequestID
+        WHERE PR.CompanyID=?
+        AND DATE(PR.CreatedDate)=DATE(CONVERT_TZ(NOW(), '+00:00', '+07:00'))
+      `, [companyId]);
 
+      // ✅ พัสดุเดือนนี้
       const [monthRows] = await DB.query(`
         SELECT COUNT(*) AS cnt
-        FROM \`Order\`
-        WHERE CompanyID=?
-            AND MONTH(UpdatedAt)=MONTH(CURDATE())
-            AND YEAR(UpdatedAt)=YEAR(CURDATE())
-        `, [companyId]);
+        FROM \`Order\` O
+        JOIN PickupRequest PR ON O.RequestID = PR.RequestID
+        WHERE PR.CompanyID=?
+        AND MONTH(PR.CreatedDate)=MONTH(CONVERT_TZ(NOW(), '+00:00', '+07:00'))
+        AND YEAR(PR.CreatedDate)=YEAR(CONVERT_TZ(NOW(), '+00:00', '+07:00'))
+      `, [companyId]);
 
+      // ✅ พัสดุทั้งหมด
       const [totalRows] = await DB.query(`
         SELECT COUNT(*) AS cnt
-        FROM \`Order\`
-        WHERE CompanyID=?
-        `, [companyId]);
+        FROM \`Order\` O
+        JOIN PickupRequest PR ON O.RequestID = PR.RequestID
+        WHERE PR.CompanyID=?
+      `, [companyId]);
 
-      res.json({
+      return res.json({
         today: todayRows.cnt,
         month: monthRows.cnt,
         total: totalRows.cnt
-     });
+      });
 
     } catch (err) {
-      console.error(err);
+      console.error("getSummary ERROR:", err);
       res.status(500).json({ message: "Error loading summary" });
     }
   }
@@ -97,27 +104,33 @@ class CompanyDashboardController {
     try {
         const companyId = req.params.companyId;
 
-    const rows = await DB.query(`
-        SELECT 
+        const rows = await DB.query(`
+        SELECT
             B.BranchID,
             B.BranchName,
             B.BranchAddress,
-            SUM(CASE WHEN O.OrderID IS NOT NULL THEN 1 ELSE 0 END) AS ParcelCount,
-            SUM(CASE WHEN PR.RequestID IS NOT NULL THEN 1 ELSE 0 END) AS PickupCount
+            IFNULL(p.PickupCount, 0) AS PickupCount,
+            IFNULL(o.ParcelCount, 0) AS ParcelCount
         FROM Branch B
-        LEFT JOIN \`Order\` O 
-            ON O.BranchID = B.BranchID AND O.CompanyID = ?
-        LEFT JOIN PickupRequest PR 
-            ON PR.BranchID = B.BranchID AND PR.CompanyID = ?
-        GROUP BY B.BranchID
-        HAVING ParcelCount > 0 AND PickupCount > 0
-    `, [companyId, companyId]);
+        LEFT JOIN (
+            SELECT BranchID, COUNT(*) AS PickupCount
+            FROM PickupRequest
+            WHERE CompanyID = ?
+            GROUP BY BranchID
+        ) p ON p.BranchID = B.BranchID
+        LEFT JOIN (
+            SELECT BranchID, COUNT(*) AS ParcelCount
+            FROM \`Order\`
+            WHERE CompanyID = ?
+            GROUP BY BranchID
+        ) o ON o.BranchID = B.BranchID
+        WHERE IFNULL(p.PickupCount,0) > 0 AND IFNULL(o.ParcelCount,0) > 0
+        `, [companyId, companyId]);
 
-        return res.json(rows);
-
+        res.json(rows);
     } catch (err) {
         console.error("🔥 getBranchBreakdown ERROR:", err);
-        return res.status(500).json({ message: "Error loading branch breakdown" });
+        res.status(500).json({ message: "Error loading branch breakdown" });
     }
   }
 

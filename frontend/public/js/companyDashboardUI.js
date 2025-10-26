@@ -106,9 +106,9 @@ async function loadBranchBreakdown(){
 /* ✅ UI Box Generator */
 function box(title, value){
   return `
-    <div class="bg-white border border-border-light rounded-xl p-4 text-center shadow-sm">
-      <div class="text-slate-500 text-sm mb-1">${title}</div>
-      <div class="text-2xl font-bold text-primary">${value}</div>
+    <div class="bg-white border border-border-light rounded-xl p-4 shadow-sm">
+      <div class="text-sm text-slate-500">${title}</div>
+      <div class="text-3xl font-extrabold mt-1 text-text-light">${value}</div>
     </div>
   `;
 }
