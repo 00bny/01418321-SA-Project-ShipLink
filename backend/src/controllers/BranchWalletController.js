@@ -1,48 +1,167 @@
-const BranchWalletService = require('../services/BranchWalletService');
+const DB = require('../config/DBConnector');
+const Wallet = require('../models/Wallet');
 
 class BranchWalletController {
+  static async _getWalletByBranchId(branchId) {
+    const rows = await DB.query(
+      `SELECT w.WalletID, w.Balance
+         FROM Branch b
+         JOIN Wallet w ON w.WalletID = b.WalletID
+        WHERE b.BranchID = ?`,
+      [branchId]
+    );
+    return rows[0] ? new Wallet(rows[0]) : null;
+  }
+
   static async getBalance(req, res) {
     try {
       const branchId = Number(req.query.branchId || req.params.branchId || 1);
-      const w = await BranchWalletService.getBalance(branchId);
+      const w = await BranchWalletController._getWalletByBranchId(branchId);
+      if (!w) throw new Error('Branch/Wallet not found');
       res.json({ branchId, walletId: w.WalletID, balance: w.Balance });
-    } catch (err) { res.status(400).json({ message: err.message }); }
-  }
-
-  static async topup(req, res) {
-    try {
-      const { branchId, amount, employeeId } = req.body;
-      const w = await BranchWalletService.topup({
-        branchId: Number(branchId || 1),
-        amount: Number(amount),
-        employeeId: Number(employeeId || 1)
-      });
-      res.json({ message: 'TOPUP_OK', walletId: w.WalletID, balance: w.Balance });
-    } catch (err) { res.status(400).json({ message: err.message }); }
-  }
-
-    static async withdraw(req, res) {
-    try {
-      const { branchId, amount, employeeId } = req.body;
-      const w = await BranchWalletService.withdraw({
-        branchId: Number(branchId || 1),
-        amount: Number(amount),
-        employeeId: Number(employeeId || 1)
-      });
-      res.json({ message: 'WITHDRAW_OK', walletId: w.WalletID, balance: w.Balance });
     } catch (err) {
+      console.error('❌ getBalance error:', err);
       res.status(400).json({ message: err.message });
     }
   }
 
-    static async listTransactions(req, res) {
+  static async topup(req, res) {
+    let conn;
+    try {
+      const { branchId, amount, employeeId } = req.body;
+      const branchIdNum = Number(branchId || 1);
+      const amt = Number(amount);
+      const empId = Number(employeeId || 1);
+
+      if (!Number.isFinite(amt) || amt <= 0) {
+        return res.status(400).json({ message: 'Invalid amount' });
+      }
+
+      const w = await BranchWalletController._getWalletByBranchId(branchIdNum);
+      if (!w) throw new Error('Branch/Wallet not found');
+
+      conn = await DB.getConnection();
+      await conn.beginTransaction();
+
+      await conn.query(
+        `UPDATE Wallet SET Balance = Balance + ? WHERE WalletID = ?`,
+        [amt, w.WalletID]
+      );
+
+      await conn.query(
+        `INSERT INTO TransactionHist (TransactionAmount, TransactionType, WalletID, EmployeeID, BranchID)
+         VALUES (?,?,?,?,?)`,
+        [amt, 'TOPUP', w.WalletID, empId, branchIdNum]
+      );
+
+      const [rows] = await conn.query(
+        `SELECT WalletID, Balance FROM Wallet WHERE WalletID=?`,
+        [w.WalletID]
+      );
+      const newWallet = new Wallet(rows);
+
+      await conn.commit();
+      res.json({
+        message: 'TOPUP_OK',
+        walletId: newWallet.WalletID,
+        balance: newWallet.Balance
+      });
+    } catch (err) {
+      if (conn) await conn.rollback();
+      console.error('❌ topup error:', err);
+      res.status(400).json({ message: err.message });
+    } finally {
+      if (conn) conn.release();
+    }
+  }
+
+  static async withdraw(req, res) {
+    let conn;
+    try {
+      const { branchId, amount, employeeId } = req.body;
+      const branchIdNum = Number(branchId || 1);
+      const amt = Number(amount);
+      const empId = Number(employeeId || 1);
+
+      if (!Number.isFinite(amt) || amt <= 0) {
+        return res.status(400).json({ message: 'Invalid amount' });
+      }
+
+      const w = await BranchWalletController._getWalletByBranchId(branchIdNum);
+      if (!w) throw new Error('Branch/Wallet not found');
+
+      if (w.Balance < amt) {
+        throw new Error('ยอดเงินไม่เพียงพอในกระเป๋า');
+      }
+
+      conn = await DB.getConnection();
+      await conn.beginTransaction();
+
+      await conn.query(
+        `UPDATE Wallet SET Balance = Balance - ? WHERE WalletID = ?`,
+        [amt, w.WalletID]
+      );
+
+      await conn.query(
+        `INSERT INTO TransactionHist (TransactionAmount, TransactionType, WalletID, EmployeeID, BranchID)
+         VALUES (?,?,?,?,?)`,
+        [amt, 'WITHDRAW', w.WalletID, empId, branchIdNum]
+      );
+
+      const [rows] = await conn.query(
+        `SELECT WalletID, Balance FROM Wallet WHERE WalletID=?`,
+        [w.WalletID]
+      );
+      const newWallet = new Wallet(rows);
+
+      await conn.commit();
+      res.json({
+        message: 'WITHDRAW_OK',
+        walletId: newWallet.WalletID,
+        balance: newWallet.Balance
+      });
+    } catch (err) {
+      if (conn) await conn.rollback();
+      console.error('❌ withdraw error:', err);
+      res.status(400).json({ message: err.message });
+    } finally {
+      if (conn) conn.release();
+    }
+  }
+
+  static async listTransactions(req, res) {
     try {
       const branchId = Number(req.query.branchId || 1);
-      const rows = await BranchWalletService.listTransactions(branchId);
-      res.json(rows);
+
+      const sql = `
+        SELECT 
+          t.TransactionID,
+          t.TransactionAmount,
+          t.TransactionType,
+          t.TransactionDateTime,
+          DATE_FORMAT(t.TransactionDateTime, '%d/%m/%Y %H:%i') AS TxnDate,
+          e.EmployeeName
+        FROM TransactionHist t
+        LEFT JOIN Employee e ON e.EmployeeID = t.EmployeeID
+        WHERE t.BranchID = ?
+        ORDER BY t.TransactionDateTime DESC
+      `;
+      const rows = await DB.query(sql, [branchId]);
+
+      const list = rows.map(r => ({
+        txnId: String(r.TransactionID),
+        amount: Number(r.TransactionAmount),
+        type: r.TransactionType,
+        date: r.TxnDate,
+        employee: r.EmployeeName || '-'
+      }));
+
+      res.json(list);
     } catch (err) {
+      console.error('❌ listTransactions error:', err);
       res.status(400).json({ message: err.message });
     }
   }
 }
+
 module.exports = BranchWalletController;

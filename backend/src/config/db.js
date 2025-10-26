@@ -6,7 +6,9 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD || 'shiplink_pw',
   database: process.env.DB_NAME || 'shiplink_db',
   waitForConnections: true,
-  connectionLimit: 10
+  connectionLimit: 10,
+  connectTimeout: 15000,
+  acquireTimeout: 15000
 });
 
 module.exports = pool;
