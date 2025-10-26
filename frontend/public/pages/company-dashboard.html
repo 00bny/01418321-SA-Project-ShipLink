@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShipLink • Company Dashboard</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary:"#2563EB",
+            "background-light":"#F8FAFC",
+            "sidebar-light":"#FFFFFF",
+            "border-light":"#E2E8F0",
+            "text-light":"#0F172A",
+          },
+          fontFamily:{display:["Prompt","sans-serif"]},
+          borderRadius:{DEFAULT:"0.75rem"}
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body{font-family:'Prompt',sans-serif;min-height:max(884px,100dvh)}
+  </style>
+</head>
+
+<body class="bg-background-light text-text-light font-display">
+<div class="flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-sidebar-light border-r border-border-light">
+    <div class="p-6">
+      <h1 class="text-2xl font-extrabold">ShipLink</h1>
+    </div>
+    <nav class="mt-4">
+      <a class="flex items-center px-5 py-3 bg-blue-50 text-primary font-semibold" href="./company-dashboard.html">
+        <span class="material-icons">dashboard</span><span class="ml-3">Dashboard</span>
+      </a>
+      <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100" href="./company-pickup.html">
+        <span class="material-icons">local_shipping</span><span class="ml-3">Pickup Management</span>
+      </a>
+      <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100" href="./company-delivery.html">
+        <span class="material-icons">assignment_turned_in</span><span class="ml-3">Delivery Confirmation</span>
+      </a>
+      <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100" href="./company-return.html">
+        <span class="material-icons">undo</span><span class="ml-3">Return Parcels</span>
+      </a>
+    </nav>
+
+    <div class="w-64 px-6 mt-auto">
+      <button id="btnLogout"
+        class="w-full flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 rounded-lg py-2 font-semibold transition">
+        <span class="material-icons mr-2">logout</span> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Content -->
+  <div class="flex-1 flex flex-col">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between p-4 bg-white border-b border-border-light">
+      <h2 class="text-2xl font-bold">แดชบอร์ด</h2>
+
+      <!-- Wallet dropdown -->
+      <div class="relative">
+        <button id="walletBtn" class="flex items-center bg-green-100 text-green-700 px-4 py-2 rounded-lg">
+          <span id="walletBalance">฿0.00</span>
+          <span class="material-icons ml-1">arrow_drop_down</span>
+        </button>
+        <div id="walletMenu"
+          class="hidden absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg border border-slate-200 z-20">
+          <a id="actWithdraw" class="block px-4 py-2 hover:bg-slate-100 cursor-pointer">ถอนเงิน</a>
+          <a id="actHist" class="block px-4 py-2 hover:bg-slate-100 cursor-pointer">ประวัติธุรกรรม</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="p-6 flex-1 space-y-6">
+
+      <!-- Summary cards -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white rounded-xl shadow p-5">
+          <div class="text-sm text-slate-500">พัสดุวันนี้</div>
+          <div id="cntToday" class="text-3xl font-extrabold mt-1">0</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-5">
+          <div class="text-sm text-slate-500">พัสดุเดือนนี้</div>
+          <div id="cntMonth" class="text-3xl font-extrabold mt-1">0</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-5">
+          <div class="text-sm text-slate-500">พัสดุทั้งหมด</div>
+          <div id="cntTotal" class="text-3xl font-extrabold mt-1">0</div>
+        </div>
+      </section>
+
+      <!-- Pickup request status -->
+      <section class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-lg font-semibold mb-3">จำนวนคำเรียกเข้ารับในแต่ละสถานะ</h3>
+        <div id="pickupStat" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      </section>
+
+      <!-- Parcel status -->
+      <section class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-lg font-semibold mb-3">จำนวนพัสดุในแต่ละสถานะ</h3>
+        <div id="parcelStat" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      </section>
+
+      <!-- Branch breakdown -->
+      <section class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-lg font-semibold mb-3">จำนวนพัสดุและคำเรียกแยกตามสาขา</h3>
+        <table class="w-full text-left text-sm">
+          <thead class="text-slate-600 border-b border-border-light">
+            <tr>
+              <th class="py-2 w-[25%]">สาขา</th>
+              <th class="py-2 w-[25%]">ที่อยู่</th>
+              <th class="py-2 w-[25%]">จำนวนพัสดุ</th>
+              <th class="py-2 w-[25%]">จำนวนคำเรียก</th>
+            </tr>
+          </thead>
+          <tbody id="branchRows"></tbody>
+        </table>
+        <div id="branchEmpty" class="text-center text-slate-500 mt-6 hidden">ยังไม่มีข้อมูล</div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script type="module" src="../js/companyDashboardUI.js"></script>
+
+</body>
+</html>

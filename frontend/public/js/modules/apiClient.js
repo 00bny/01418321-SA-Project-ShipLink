@@ -249,6 +249,19 @@ export const ApiClient = {
     }).then(j);
   },
 
+  // --- Company Dashboard APIs ---
+  async getCompanyDashboardSummary(companyId){
+    return fetch(`${API}/api/dashboard/company/summary/${companyId}`).then(j);
+  },
+  async getCompanyPickupStats(companyId){
+    return fetch(`${API}/api/dashboard/company/pickups/${companyId}`).then(j);
+  },
+  async getCompanyParcelStats(companyId){
+    return fetch(`${API}/api/dashboard/company/parcels/${companyId}`).then(j);
+  },
+  async getBranchBreakdown(companyId){
+    return fetch(`${API}/api/dashboard/company/branch/${companyId}`).then(j);
+  },
 };
 
 // ✅ Company Wallet API (ฝั่งขนส่ง) — ใช้ชื่อสอดคล้องกับ Branch*

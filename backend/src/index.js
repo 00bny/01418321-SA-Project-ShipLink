@@ -48,6 +48,7 @@ app.use('/api/company-wallet', require('./routes/companyWalletRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 app.use('/api/company', require('./routes/companyReturnRoutes'));
 app.use('/api/order-status', require('./routes/orderStatusRoutes'));
+app.use("/api/dashboard", require("./routes/companyDashboardRoutes"));
 
 // ----------------------------------------------
 // ⚠️ 404 Handler ✅ ใช้เป็นตัวสุดท้าย
