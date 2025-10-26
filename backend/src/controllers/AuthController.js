@@ -36,7 +36,7 @@ class AuthController {
         return res.status(400).json({ message: 'role/phone/password required' });
       }
       const result = await AuthService.login({ role, phone, password });
-      if (!result) return res.status(401).json({ message: 'invalid credentials' });
+      if (!result) return res.status(401).json({ message: 'เบอร์โทรศัพท์หรือรหัสผ่านไม่ถูกต้อง' });
 
       // ชั่วคราว: ส่ง path สำหรับ redirect ไปหน้า create-order เสมอ
       return res.json({ ...result, redirect: '/frontend/public/pages/create-order.html' });

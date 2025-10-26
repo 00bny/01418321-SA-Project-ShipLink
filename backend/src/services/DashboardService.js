@@ -3,6 +3,7 @@ const DB = require('../config/DBConnector');
 const STATUS_TH = {
   Pending   : 'รอชำระเงิน',
   Paid      : 'ชำระเงินแล้ว',
+  RequestedPickup : 'รอเข้ารับ',
   Pickup    : 'เข้ารับพัสดุแล้ว',
   'In Transit': 'อยู่ระหว่างจัดส่ง',
   Success   : 'จัดส่งเสร็จสิ้น',

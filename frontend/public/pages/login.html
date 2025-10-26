@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ShipLink • Log In</title>
+  <title>ShipLink • Login</title>
 
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
 
@@ -16,7 +16,7 @@
 </head>
 <body class="min-h-screen bg-slate-50 flex items-center justify-center">
   <div class="w-full max-w-md bg-white shadow-xl rounded-2xl p-8">
-    <h1 class="text-3xl font-extrabold text-center mb-6">Log In</h1>
+    <h1 class="text-3xl font-extrabold text-center mb-6">Login</h1>
 
     <div class="space-y-4">
       <div>
@@ -29,20 +29,20 @@
 
       <div>
         <label class="block text-sm font-medium mb-1">Phone Number</label>
-        <input id="phone" class="w-full bg-slate-50 border-slate-200 rounded-lg" placeholder="เช่น 0812345678" inputmode="numeric" pattern="\d*">
+        <input id="phone" class="w-full bg-slate-50 border-slate-200 rounded-lg" placeholder="เช่น 0901234567" inputmode="numeric" pattern="\d*">
       </div>
 
       <div>
         <label class="block text-sm font-medium mb-1">Password</label>
-        <input id="password" type="password" class="w-full bg-slate-50 border-slate-200 rounded-lg" placeholder="••••••••">
+        <input id="password" type="password" class="w-full bg-slate-50 border-slate-200 rounded-lg" placeholder="กรอกรหัสผ่าน">
       </div>
 
       <button id="btnLogin" class="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg">
-        Log In
+        Login
       </button>
     </div>
   </div>
 
-  <script type="module" src="../js/login.js"></script>
+  <script type="module" src="../js/LoginUI.js"></script>
 </body>
 </html>

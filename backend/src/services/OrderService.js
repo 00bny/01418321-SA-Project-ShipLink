@@ -10,6 +10,7 @@ const STATUS_TH = {
   Pending   : 'รอชำระเงิน',
   Paid      : 'ชำระเงินแล้ว',
   Pickup    : 'เข้ารับพัสดุแล้ว',
+  RequestedPickup : 'รอเข้ารับ',
   'In Transit': 'อยู่ระหว่างจัดส่ง',
   Success   : 'จัดส่งเสร็จสิ้น',
   Fail      : 'จัดส่งไม่สำเร็จ',
