@@ -1,82 +1,82 @@
-const DB = require('../config/db');
-const PickupService = require('../services/PickupService');
+const DB = require('../config/DBConnector');
 
 const PickupController = {
-
-  // ======================================================
-  // ✅ (11.x) POST /api/pickup/request — ฝั่งพนักงานสาขา
-  // ======================================================
   async createPickupRequest(req, res) {
+    let conn;
     try {
-      const { companyId, employeeId, branchId } = req.body;
-      if (!companyId) {
-        return res.status(400).json({ message: 'Company ID required' });
+      const companyId = Number(req.body.companyId);
+      const employeeId = Number(req.body.employeeId);
+      const branchId   = Number(req.body.branchId);
+
+      if (!companyId || !employeeId || !branchId) {
+        return res.status(400).json({ message: 'CompanyID/EmployeeID/BranchID required' });
       }
 
-      // 1️⃣ ตรวจสอบว่ามีออร์เดอร์ที่ชำระเงินแล้วหรือไม่
-      const [[countRow]] = await DB.query(`
-        SELECT COUNT(*) AS totalPaid
-        FROM \`Order\`
-        WHERE CompanyID = ? AND OrderStatus = 'Paid'
-      `, [companyId]);
+      conn = await DB.getConnection();
+      await conn.beginTransaction();
 
-      if (countRow.totalPaid === 0) {
-        return res.status(400).json({ message: 'ไม่มีออร์เดอร์ที่ชำระเงินแล้วสำหรับบริษัทนี้' });
+      const [countRows] = await conn.query(
+        `SELECT COUNT(*) AS totalPaid
+           FROM \`Order\`
+          WHERE CompanyID = ? AND BranchID = ? AND OrderStatus = 'Paid'`,
+        [companyId, branchId]
+      );
+      const totalPaid = Number(countRows?.[0]?.totalPaid || 0);
+      if (totalPaid === 0) {
+        await conn.rollback();
+        return res.status(400).json({ message: 'ไม่มีออร์เดอร์ที่ชำระเงินแล้วสำหรับบริษัทนี้ในสาขานี้' });
       }
 
-      // 2️⃣ สร้างคำร้อง PickupRequest
-      const [result] = await DB.query(`
-        INSERT INTO PickupRequest (RequestStatus, CreatedDate, CompanyID, EmployeeID, BranchID)
-        VALUES ('RequestedPickup', DATE_ADD(NOW(), INTERVAL 7 HOUR), ?, ?, ?)
-      `, [companyId, employeeId, branchId]);
+      const [ins] = await conn.query(
+        `INSERT INTO PickupRequest (RequestStatus, CreatedDate, CompanyID, EmployeeID, BranchID)
+         VALUES ('RequestedPickup', DATE_ADD(NOW(), INTERVAL 7 HOUR), ?, ?, ?)`,
+        [companyId, employeeId, branchId]
+      );
+      const requestId = ins?.insertId;
+      if (!requestId) throw new Error('Insert failed');
 
-      if (!result.insertId) throw new Error('Insert failed');
+      await conn.query(
+        `UPDATE \`Order\`
+            SET OrderStatus = 'RequestedPickup', RequestID = ?
+          WHERE CompanyID = ? AND BranchID = ? AND OrderStatus = 'Paid'`,
+        [requestId, companyId, branchId]
+      );
 
-      // 3️⃣ อัปเดตสถานะออร์เดอร์ของบริษัทนี้เป็น “รอเข้ารับ”
-      await DB.query(`
-        UPDATE \`Order\`
-        SET OrderStatus = 'RequestedPickup', RequestID = ?
-        WHERE CompanyID = ? AND OrderStatus = 'Paid'
-      `, [result.insertId, companyId]);
-
-      // 4️⃣ ตอบกลับสำเร็จ
-      res.json({
-        message: 'เรียกขนส่งสำเร็จ',
-        requestId: result.insertId
-      });
-
+      await conn.commit();
+      return res.json({ message: 'เรียกขนส่งสำเร็จ', requestId });
     } catch (err) {
+      if (conn) await conn.rollback();
       console.error('❌ createPickupRequest error:', err);
       res.status(500).json({ message: 'Failed to create pickup request' });
+    } finally {
+      if (conn) conn.release();
     }
   },
 
-  // ======================================================
-  // ✅ (11.x) GET /api/pickup/history — ฝั่งพนักงานสาขา
-  // ======================================================
   async getPickupHistory(req, res) {
     try {
-      const branchId = req.query.branchId;
+      const branchId = Number(req.query.branchId);
       if (!branchId) {
         return res.status(400).json({ message: 'กรุณาระบุ BranchID' });
       }
 
-      const [rows] = await DB.query(`
-        SELECT 
-          pr.RequestID AS RequestNo,
-          sc.CompanyName AS ShippingCompany,
-          pr.CreatedDate AS CreatedTime,
-          pr.ScheduledPickupTime AS ScheduledTime,
-          pr.ActualPickupTime AS ActualTime,
-          pr.RequestStatus AS Status,
-          COALESCE(pr.PickupStaffName, '-') AS PickupStaff,
-          COALESCE(pr.PickupStaffPhone, '-') AS PickupStaffPhone
-        FROM PickupRequest pr
-        JOIN ShippingCompany sc ON pr.CompanyID = sc.CompanyID
-        LEFT JOIN Employee e ON pr.EmployeeID = e.EmployeeID
+      const rows = await DB.query(
+        `SELECT 
+           pr.RequestID             AS RequestNo,
+           sc.CompanyName           AS ShippingCompany,
+           pr.CreatedDate           AS CreatedTime,
+           pr.ScheduledPickupTime   AS ScheduledTime,
+           pr.ActualPickupTime      AS ActualTime,
+           pr.RequestStatus         AS Status,
+           COALESCE(pr.PickupStaffName,  '-') AS PickupStaff,
+           COALESCE(pr.PickupStaffPhone, '-') AS PickupStaffPhone
+         FROM PickupRequest pr
+         JOIN ShippingCompany sc ON pr.CompanyID = sc.CompanyID
+         LEFT JOIN Employee e     ON pr.EmployeeID = e.EmployeeID
         WHERE pr.BranchID = ?
-        ORDER BY pr.CreatedDate DESC
-      `, [branchId]);
+        ORDER BY pr.CreatedDate DESC`,
+        [branchId]
+      );
 
       res.json(rows);
     } catch (err) {
@@ -85,60 +85,51 @@ const PickupController = {
     }
   },
 
-  // ======================================================
-  // ✅ (12.1 + 12.2) GET /api/pickup/company/:id — ฝั่งบริษัทขนส่ง
-  // ======================================================
   async getRequestsByCompany(req, res) {
-    const companyId = req.params.id;
     try {
-      const [requests] = await DB.query(`
-        SELECT RequestID, CreatedDate, RequestStatus
-        FROM PickupRequest
-        WHERE CompanyID = ?
-        ORDER BY CreatedDate DESC
-      `, [companyId]);
+      const companyId = Number(req.params.id);
+      if (!companyId) return res.status(400).json({ message: 'Invalid company id' });
 
-      // ✅ ดึงจำนวนพัสดุของแต่ละคำขอ (query 12.2)
-      for (let r of requests) {
-        const [[countRow]] = await DB.query(`
-          SELECT COUNT(*) AS ParcelCount
-          FROM \`Order\`
-          WHERE CompanyID = ? AND RequestID = ?
-        `, [companyId, r.RequestID]);
-        r.ParcelCount = countRow?.ParcelCount || 0;
-      }
+      const rows = await DB.query(
+        `SELECT 
+           pr.RequestID,
+           pr.CreatedDate,
+           pr.RequestStatus,
+           (
+             SELECT COUNT(*) 
+               FROM \`Order\` o 
+              WHERE o.CompanyID = pr.CompanyID 
+                AND o.RequestID = pr.RequestID
+           ) AS ParcelCount
+         FROM PickupRequest pr
+        WHERE pr.CompanyID = ?
+        ORDER BY pr.CreatedDate DESC`,
+        [companyId]
+      );
 
-      res.json(requests);
+      res.json(rows);
     } catch (err) {
       console.error('❌ getRequestsByCompany error:', err);
       res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อมูลคำขอ' });
     }
   },
 
-  // ======================================================
-  // ✅ (12.3) POST /api/pickup/confirm — ฝั่งบริษัทขนส่ง
-  // ======================================================
   async confirmPickup(req, res) {
-    const { requestId, time, name, phone } = req.body;
-
-    if (!requestId || !time || !name || !phone)
-      return res.status(400).json({ message: 'ข้อมูลไม่ครบถ้วน' });
-
     try {
-      // 1️⃣ อัปเดตข้อมูลคำขอ PickupRequest
-      await DB.query(`
-        UPDATE PickupRequest
-        SET ScheduledPickupTime = ?, PickupStaffName = ?, 
-            PickupStaffPhone = ?, RequestStatus = 'PickingUp'
-        WHERE RequestID = ?
-      `, [time, name, phone, requestId]);
+      const { requestId, time, name, phone } = req.body;
+      if (!requestId || !time || !name || !phone) {
+        return res.status(400).json({ message: 'ข้อมูลไม่ครบถ้วน' });
+      }
 
-    //   // 2️⃣ อัปเดตสถานะของออร์เดอร์ที่อยู่ในคำขอนี้
-    //   await DB.query(`
-    //     UPDATE \`Order\`
-    //     SET OrderStatus = 'กำลังเข้ารับ'
-    //     WHERE RequestID = ?
-    //   `, [requestId]);
+      await DB.query(
+        `UPDATE PickupRequest
+            SET ScheduledPickupTime = ?, 
+                PickupStaffName     = ?, 
+                PickupStaffPhone    = ?, 
+                RequestStatus       = 'PickingUp'
+          WHERE RequestID = ?`,
+        [time, name, phone, requestId]
+      );
 
       res.json({ message: 'ยืนยันคำเรียกเสร็จสิ้น' });
     } catch (err) {
@@ -148,24 +139,39 @@ const PickupController = {
   },
 
   async completePickup(req, res) {
+    let conn;
     try {
-        const requestId = req.params.id;
-        await PickupService.completePickup(requestId);
+      const requestId = Number(req.params.id);
+      if (!requestId) return res.status(400).json({ message: 'Invalid request id' });
 
-        // 2️⃣ อัปเดตสถานะของออร์เดอร์ที่อยู่ในคำขอนี้
-        await DB.query(`
-            UPDATE \`Order\`
+      conn = await DB.getConnection();
+      await conn.beginTransaction();
+
+      await conn.query(
+        `UPDATE PickupRequest
+            SET RequestStatus   = 'PickedUp',
+                ActualPickupTime = DATE_ADD(NOW(), INTERVAL 7 HOUR)
+          WHERE RequestID = ?`,
+        [requestId]
+      );
+
+      await conn.query(
+        `UPDATE \`Order\`
             SET OrderStatus = 'Pickup'
-            WHERE RequestID = ?
-        `, [requestId]);
+          WHERE RequestID = ?`,
+        [requestId]
+      );
 
-        res.json({ message: 'อัปเดตสถานะเป็น เข้ารับสำเร็จ' });
+      await conn.commit();
+      res.json({ message: 'อัปเดตสถานะเป็น เข้ารับสำเร็จ' });
     } catch (error) {
-        console.error("completePickup Error:", error);
-        res.status(500).json({ message: 'ไม่สามารถอัปเดตสถานะได้' });
+      if (conn) await conn.rollback();
+      console.error('❌ completePickup error:', error);
+      res.status(500).json({ message: 'ไม่สามารถอัปเดตสถานะได้' });
+    } finally {
+      if (conn) conn.release();
     }
-}
-
+  }
 };
 
 module.exports = PickupController;
