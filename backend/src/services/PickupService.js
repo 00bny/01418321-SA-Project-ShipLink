@@ -27,7 +27,7 @@ class PickupService {
       // Step 6: Insert pickup request (query 10.3)
       const [result] = await conn.execute(`
         INSERT INTO PickupRequest (RequestStatus, CreatedDate, CompanyID, BranchID, EmployeeID)
-        VALUES ('Pending', NOW(), ?, ?, ?)
+        VALUES ('RequestedPickup', DATE_ADD(NOW(), INTERVAL 7 HOUR), ?, ?, ?)
       `, [companyId, branch.BranchID, employeeId]);
 
       await conn.commit();
@@ -91,7 +91,7 @@ class PickupService {
     await DB.query(`
         UPDATE PickupRequest
         SET RequestStatus = 'PickedUp',
-            ActualPickupTime = NOW()
+            ActualPickupTime = DATE_ADD(NOW(), INTERVAL 7 HOUR)
         WHERE RequestID = ?
     `, [requestId]);
   }
