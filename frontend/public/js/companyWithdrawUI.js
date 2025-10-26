@@ -47,18 +47,38 @@ function bindWithdraw(){
   const msg = document.getElementById('msg');
   btn.addEventListener('click', async ()=>{
     const amount = Number(document.getElementById('amount').value || 0);
-    if (!amount || amount <= 0) {
-      msg.textContent = 'กรุณาระบุจำนวนเงินที่ถูกต้อง';
-      return;
+
+    if (!amount || amount <= 0){
+    msg.textContent = 'กรุณาระบุจำนวนเงินที่ถูกต้อง';
+    return;
     }
-    msg.textContent = 'กำลังดำเนินการ...';
-    try{
-      const r = await ApiCompanyWallet.withdraw(COMPANY_ID, amount);
-      msg.textContent = 'สำเร็จ ยอดคงเหลือ: ' + baht(r?.balance||0);
-      await refreshBalance();
-    }catch(e){
-      msg.textContent = e?.message || 'ไม่สำเร็จ';
+    msg.textContent = '';
+
+    if (!confirm(`ยืนยันถอนเงิน ${baht(amount)} ?`)) return;
+
+    try {
+    const r = await ApiCompanyWallet.withdraw(COMPANY_ID, amount);
+    await refreshBalance();
+
+    // ✅ Popup แสดงข้อความตามจำนวนเงิน
+    document.getElementById("withdrawSuccessText").textContent =
+        `ถอนเงิน ${baht(amount)} เรียบร้อยแล้ว`;
+
+    const popup = document.getElementById("withdrawSuccessModal");
+    popup.classList.remove("hidden");
+
+    // ✅ เคลียร์ input
+    document.getElementById('amount').value = "";
+
+    // ✅ ปิด popup
+    document.getElementById("successOkBtn").onclick = ()=>{
+        popup.classList.add("hidden");
+    };
+
+    } catch(e){
+    msg.textContent = e?.message || 'ไม่สำเร็จ';
     }
+
   });
 }
 
