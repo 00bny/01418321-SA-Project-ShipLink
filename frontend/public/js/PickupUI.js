@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // 📦 โหลดตารางบริษัทขนส่ง
 // ------------------------------
 async function loadCompanies() {
-  const companies = await ApiClient.getCompanies();
+  const companies = await ApiClient.getCompaniesByBranch(BRANCH_ID);
   const tbody = document.querySelector('#pickup-table-body');
 
   if (!companies.length) {

@@ -30,6 +30,11 @@ export const ApiClient = {
     return j(r);
   },
 
+  async getCompaniesByBranch(branchId) {
+    const r = await fetch(`${API}/api/companies?branchId=${encodeURIComponent(branchId)}`);
+    return j(r);
+  },
+
   async getQuotes(payload){
     const r = await fetch(`${API}/api/quotes`,{
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -73,10 +78,11 @@ export const ApiClient = {
   },
 
   // --- checkout ---
-  async payAll(employeeId){
-    const r = await fetch(`${API}/api/checkout/pay-all`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ employeeId })
+  async checkoutPay({ branchId, employeeId, orderIds }) {
+    const r = await fetch(`${API}/api/checkout/pay`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ branchId, employeeId, orderIds })
     });
     return j(r);
   },

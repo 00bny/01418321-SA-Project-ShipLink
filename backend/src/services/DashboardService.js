@@ -123,7 +123,7 @@ class DashboardService {
               COUNT(o.OrderID) AS orderCount
          FROM Employee e
          LEFT JOIN \`Order\` o ON o.EmployeeID = e.EmployeeID
-        WHERE e.BranchID = ?
+        WHERE e.BranchID = ? AND e.EmployeePosition = 'Staff'
         GROUP BY e.EmployeeID, e.EmployeeName, e.EmployeePhone
         ORDER BY orderCount DESC, e.EmployeeID ASC`,
       [branchId]
