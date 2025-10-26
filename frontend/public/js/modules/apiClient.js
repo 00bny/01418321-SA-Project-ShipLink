@@ -118,11 +118,11 @@ export const ApiClient = {
     return j(r);
   },
 
-  async createPickupRequest(companyId, employeeId) {
+  async createPickupRequest(companyId, employeeId, branchId) {
     const r = await fetch(`${API}/api/pickup/request`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ companyId, employeeId }),
+      body: JSON.stringify({ companyId, employeeId, branchId }),
     });
     if (!r.ok) throw new Error('Failed to create pickup request');
     return r.json();

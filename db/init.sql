@@ -55,8 +55,10 @@ CREATE TABLE PickupRequest (
   CreatedDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   EmployeeID INT NOT NULL,
   CompanyID INT NOT NULL,
+  BranchID INT NOT NULL,
   FOREIGN KEY (EmployeeID) REFERENCES Employee(EmployeeID),
-  FOREIGN KEY (CompanyID) REFERENCES ShippingCompany(CompanyID)
+  FOREIGN KEY (CompanyID) REFERENCES ShippingCompany(CompanyID),
+  FOREIGN KEY (BranchID) REFERENCES Branch(BranchID)
 );
 
 CREATE TABLE `Order` (
