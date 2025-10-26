@@ -122,4 +122,73 @@ class OrderService {
 
 }
 
-module.exports = OrderService;
+async function markDeliveredSuccess(orderId) {
+  const conn = await DB.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    const [orders] = await conn.query(`
+      SELECT O.*, 
+             B.WalletID AS BranchWalletID, 
+             S.WalletID AS CompanyWalletID, 
+             S.SharePercent,
+             O.CompanyID,
+             O.BranchID
+      FROM \`Order\` O
+      JOIN Branch B ON O.BranchID = B.BranchID
+      JOIN ShippingCompany S ON O.CompanyID = S.CompanyID
+      WHERE O.OrderID = ?
+      FOR UPDATE
+    `, [orderId]);
+
+    if (!orders.length) throw new Error("Order not found");
+    const order = orders[0];
+
+    const shipCost = Number(order.ShipCost || 0);
+    const share = Number(order.SharePercent || 0);
+
+    // ✅ คำนวณรายได้
+    const branchEarn = shipCost * (share / 100);
+    const companyEarn = shipCost - branchEarn;
+
+    // ✅ อัปเดต wallet
+    await conn.query(`UPDATE Wallet SET Balance = Balance + ? WHERE WalletID=?`, 
+      [companyEarn, order.CompanyWalletID]);
+
+    await conn.query(`UPDATE Wallet SET Balance = Balance + ? WHERE WalletID=?`,
+      [branchEarn, order.BranchWalletID]);
+
+    // ✅ update order status
+    await conn.query(`
+      UPDATE \`Order\`
+      SET OrderStatus='Success'
+      WHERE OrderID=?
+    `, [orderId]);
+
+    // ✅  Insert TransactionHist ฝั่งบริษัท
+    await conn.query(`
+      INSERT INTO TransactionHist 
+        (TransactionAmount, TransactionType, WalletID, EmployeeID, CompanyID)
+      VALUES (?, 'รับเงินค่าขนส่ง', ?, NULL, ?)
+    `, [companyEarn, order.CompanyWalletID, order.CompanyID]);
+
+    // ✅ Insert TransactionHist ฝั่งสาขา
+    await conn.query(`
+      INSERT INTO TransactionHist 
+        (TransactionAmount, TransactionType, WalletID, EmployeeID, BranchID)
+      VALUES (?, 'รับเงินค่าขนส่ง', ?, NULL, ?)
+    `, [branchEarn, order.BranchWalletID, order.BranchID]);
+
+    await conn.commit();
+    return { branchEarn, companyEarn };
+
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
+  }
+}
+
+OrderService.markDeliveredSuccess = markDeliveredSuccess; // ผูกเมธอดเข้ากับคลาส
+module.exports = OrderService;                             // แล้วค่อย export คลาส

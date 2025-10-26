@@ -120,16 +120,25 @@ function attachButtonEvents() {
         return;
       }
 
+      // ✅ ประกาศก่อนใช้งาน
       const confirmText = {
         "In Transit": "คุณต้องการเริ่มจัดส่งพัสดุใช่ไหม?",
         "Success": "ยืนยันว่าจัดส่งพัสดุสำเร็จแล้วใช่ไหม?"
-      }[status];
+      }[status] || "ยืนยันดำเนินการใช่ไหม?";
 
       if (!confirm(confirmText)) return;
 
       try {
-        await ApiClient.updateOrderStatus(id, { status });
-        loadPickupOrders();
+        if (status === "Success") {
+          // ✅ กรณีจัดส่งสำเร็จ: ใช้เส้นทางเฉพาะเพื่ออัปเดต Wallet + TransactionHist
+          await ApiClient.deliverSuccess(id);
+          await loadPickupOrders();
+          await loadCompanyWalletBalance(); // อัปเดตยอดใน dropdown
+        } else {
+          // ✅ สถานะอื่นยังคงใช้ updateOrderStatus เดิม
+          await ApiClient.updateOrderStatus(id, { status });
+          await loadPickupOrders();
+        }
       } catch (err) {
         console.error(err);
         alert("เกิดข้อผิดพลาดในการอัปเดตสถานะ ❌");

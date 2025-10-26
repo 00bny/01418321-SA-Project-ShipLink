@@ -240,7 +240,15 @@ export const ApiClient = {
       body: JSON.stringify({ action })
     });
     return res.json();
-  }
+  },
+
+  deliverSuccess(orderId) {
+    return fetch(`${API}/api/orders/${orderId}/deliver-success`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    }).then(j);
+  },
+
 };
 
 // ✅ Company Wallet API (ฝั่งขนส่ง) — ใช้ชื่อสอดคล้องกับ Branch*

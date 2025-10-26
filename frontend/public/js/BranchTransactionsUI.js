@@ -65,8 +65,21 @@ class BranchTransactionsUI {
         <td class="py-2">${t.txnId}</td>
         <td class="py-2">${fmt(t.amount)}</td>
         <td class="py-2">
-          <span class="px-2 py-1 text-xs rounded-full ${t.type==='TOPUP' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-            ${t.type==='TOPUP' ? 'เติมเงิน' : 'ถอนเงิน'}
+          <span class="px-2 py-1 text-xs rounded-full 
+                ${
+                  t.type === 'TOPUP'
+                    ? 'bg-green-100 text-green-700'
+                    : t.type === 'รับเงินค่าขนส่ง'
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'bg-red-100 text-red-700'
+                }">
+            ${
+              t.type === 'TOPUP'
+                ? 'เติมเงิน'
+                : t.type === 'รับเงินค่าขนส่ง'
+                  ? 'รับเงินค่าขนส่ง'
+                  : 'ถอนเงิน'
+            }
           </span>
         </td>
         <td class="py-2">${t.date}</td>
