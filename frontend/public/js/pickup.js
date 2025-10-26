@@ -8,16 +8,48 @@ function getQuery(name){ return new URLSearchParams(window.location.search).get(
 // ------------------------------
 const BRANCH_ID = Number(getQuery('branchId') || 1);
 const EMPLOYEE_ID = Number(getQuery('employeeId') || 2);
+
+// ------------------------------
+// 💰 Wallet helper
+// ------------------------------
+function baht(n){
+  return '฿' + Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+// ------------------------------
+// ✅ Sidebar link params
+// ------------------------------
+function patchSidebarLinks(){
+  const addParams = (sel, file) => {
+    const a = document.querySelector(sel);
+    if (!a) return;
+    const url = new URL(`../pages/${file}`, window.location.href);
+    url.searchParams.set('employeeId', String(EMPLOYEE_ID));
+    url.searchParams.set('branchId', String(BRANCH_ID));
+    a.href = url.toString();
+  };
+  addParams('a[href$="dashboard-staff.html"]', 'dashboard-staff.html');
+  addParams('a[href$="create-order.html"]', 'create-order.html');
+  addParams('a[href$="all-order.html"]', 'all-order.html');
+  addParams('a[href$="pickup.html"]', 'pickup.html');
+}
+
 // ------------------------------
 // 🚀 เมื่อโหลดหน้า
 // ------------------------------
 document.addEventListener('DOMContentLoaded', async () => {
+  patchSidebarLinks();
+  initWalletDropdown();
+  await loadWallet();
+
   await loadCompanies();
   await loadPickupHistory();
+
+  document.getElementById('btnLogout')?.addEventListener('click', ()=>logout());
 });
 
 // ------------------------------
-// 📦 โหลดตารางบริษัทขนส่ง + จำนวนออร์เดอร์ชำระแล้ว
+// 📦 โหลดตารางบริษัทขนส่ง
 // ------------------------------
 async function loadCompanies() {
   const companies = await ApiClient.getCompanies();
@@ -42,66 +74,42 @@ async function loadCompanies() {
     </tr>
   `).join('');
 
-  // ------------------------------
-  // 🧭 เมื่อกดปุ่ม "เรียกขนส่ง"
-  // ------------------------------
   document.querySelectorAll('.btn-call').forEach(btn => {
     btn.addEventListener('click', async () => {
       const companyId = btn.dataset.company;
-      const employeeId = localStorage.getItem('employeeId') || EMPLOYEE_ID;
       const company = companies.find(c => c.CompanyID == companyId);
-
-      // ✅ ตรวจสอบจำนวนออร์เดอร์ที่ชำระเงินแล้ว
       const totalPaid = company.TotalOrdersPaid ?? 0;
-      if (totalPaid === 0) {
-        alert(`⚠️ ไม่มีออร์เดอร์สำหรับบริษัทขนส่ง ${company.CompanyName} ที่ชำระเงินแล้วในขณะนี้`);
-        return;
-      }
+      if (totalPaid === 0) return alert('⚠️ ไม่มีออร์เดอร์ที่ชำระเงินแล้ว');
 
-      // ✅ Popup ยืนยันก่อนสร้างคำร้อง
-      const confirmMsg = `ต้องการเรียกขนส่ง "${company.CompanyName}" เข้ารับพัสดุหรือไม่?\n\nจำนวนออร์เดอร์ที่ชำระแล้ว: ${totalPaid}`;
-      if (!confirm(confirmMsg)) return;
-
+      if (!confirm(`ต้องการเรียกขนส่ง "${company.CompanyName}" ?\nจำนวนออร์เดอร์ที่ชำระแล้ว: ${totalPaid}`)) return;
       try {
-        // ✅ เรียก API เพื่อสร้างคำร้อง pickup
-        const res = await ApiClient.createPickupRequest(companyId, employeeId);
-
-        // ✅ แจ้งผลลัพธ์
-        alert(`✅ ${res.message}\n`);
-
-        // ✅ โหลดข้อมูลใหม่ (โดยไม่ต้อง refresh หน้า)
+        const res = await ApiClient.createPickupRequest(companyId, EMPLOYEE_ID);
+        alert(`✅ ${res.message}`);
         await loadPickupHistory();
         await loadCompanies();
-
       } catch (err) {
-        console.error('❌ Error calling pickup:', err);
-        alert('❌ ' + (err.message || 'เกิดข้อผิดพลาดขณะเรียกขนส่ง'));
+        alert('❌ เกิดข้อผิดพลาดขณะเรียกขนส่ง');
       }
     });
   });
 }
 
-// เพิ่ม helper ด้านบนไฟล์ หรือเหนือ loadPickupHistory()
+// ------------------------------
+// 🕓 Format Date (ไม่ timezone shift)
+// ------------------------------
 function formatDateTimeLocal(value) {
   if (!value) return '-';
-  let s = String(value).trim();
-
-  // รองรับทั้ง 'YYYY-MM-DD HH:mm:ss' และ 'YYYY-MM-DDTHH:mm:ss.sssZ'
-  s = s.replace('T', ' ').replace('Z', '');
+  let s = String(value).replace('T',' ').replace('Z','');
   if (s.includes('.')) s = s.split('.')[0];
-
-  const [datePart, timePart] = s.split(' ');
-  if (!datePart || !timePart) return s;
-
-  const [y, m, d] = datePart.split('-');
-  const [hh, mm] = timePart.split(':');
-
-  // ใช้ปีคริสต์ศักราชตามที่ต้องการ
-  return `${d}/${m}/${y} ${hh}:${mm}`;
+  const [d, t] = s.split(' ');
+  if (!d || !t) return s;
+  const [y, m, dd] = d.split('-');
+  const [hh, mm] = t.split(':');
+  return `${dd}/${m}/${y} ${hh}:${mm}`;
 }
 
 // ------------------------------
-// 🕓 โหลดประวัติการเรียกรับพัสดุ
+// 🕓 โหลดประวัติการรับพัสดุ
 // ------------------------------
 async function loadPickupHistory() {
   const tbody = document.getElementById('pickup-history-body');
@@ -116,7 +124,7 @@ async function loadPickupHistory() {
     }
 
     tbody.innerHTML = history.map(item => `
-      <tr class="border-b border-border-light">
+      <tr class="border-b">
         <td class="py-2">${item.RequestNo}</td>
         <td class="py-2">${item.ShippingCompany}</td>
         <td class="py-2">${formatDateTimeLocal(item.DateTime)}</td>
@@ -124,23 +132,59 @@ async function loadPickupHistory() {
         <td class="py-2">${item.Staff || '-'}</td>
       </tr>
     `).join('');
-
   } catch (err) {
-    console.error('❌ Error loading pickup history:', err);
-    tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-red-500">โหลดข้อมูลไม่สำเร็จ</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-red-500">โหลดข้อมูลล้มเหลว</td></tr>`;
   }
 }
-function patchSidebarLinks(){
-  const addParams = (sel, file) => {
-    const a = document.querySelector(sel);
-    if (!a) return;
+
+// ------------------------------
+// 💰 โหลดยอด Wallet ของสาขา
+// ------------------------------
+async function loadWallet(){
+  try{
+    const r = await ApiClient.getBranchBalance(BRANCH_ID);
+    document.getElementById('walletBalance').textContent = baht(r?.balance||0);
+  } catch {}
+}
+
+// ------------------------------
+// 💼 Wallet Dropdown menu
+// ------------------------------
+function initWalletDropdown(){
+  const btn = document.getElementById('walletBtn');
+  const menu = document.getElementById('walletMenu');
+  if (!btn || !menu) return;
+
+  // Toggle open/close
+  btn.addEventListener('click', (e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    menu.classList.toggle('hidden');
+  });
+
+  // Prevent closing when clicking inside
+  menu.addEventListener('click', (e)=> e.stopPropagation());
+
+  // Click outside to close
+  document.addEventListener('click', ()=>{
+    if (!menu.classList.contains('hidden')) menu.classList.add('hidden');
+  });
+
+  const nav = (file)=>{
     const url = new URL(`../pages/${file}`, window.location.href);
-    url.searchParams.set('employeeId', String(this.EMPLOYEE_ID));
-    url.searchParams.set('branchId', String(this.BRANCH_ID));
-    a.href = url.toString();
+    url.searchParams.set('employeeId', String(EMPLOYEE_ID));
+    url.searchParams.set('branchId', String(BRANCH_ID));
+    window.location.href = url.toString();
   };
-  addParams('a[href$="dashboard-staff.html"]', 'dashboard-staff.html');
-  addParams('a[href$="create-order.html"]', 'create-order.html');
-  addParams('a[href$="all-order.html"]', 'all-order.html');
-  addParams('a[href$="pickup.html"]', 'pickup.html');
+  document.getElementById('actTopup')?.addEventListener('click',(e)=>{ e.preventDefault(); nav('branch-topup.html'); });
+  document.getElementById('actWithdraw')?.addEventListener('click',(e)=>{ e.preventDefault(); nav('branch-withdraw.html'); });
+  document.getElementById('actHist')?.addEventListener('click',(e)=>{ e.preventDefault(); nav('branch-transactions.html'); });
+}
+
+// ------------------------------
+// 🚪 Logout
+// ------------------------------
+function logout(){
+  if (!confirm('ออกจากระบบใช่หรือไม่?')) return;
+  window.location.href = '../pages/login.html';
 }
