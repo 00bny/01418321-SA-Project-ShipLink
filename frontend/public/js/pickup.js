@@ -1,12 +1,13 @@
 // frontend/js/pickup.js
 import { ApiClient } from './modules/apiClient.js';
 
-// ------------------------------
-// 🧭 Config (จำลองค่าการล็อกอิน)
-// ------------------------------
-const BRANCH_ID = 1;   // TODO: ดึงจาก session จริงในอนาคต
-const EMPLOYEE_ID = 1; // จำลองพนักงานที่ล็อกอินอยู่
+function getQuery(name){ return new URLSearchParams(window.location.search).get(name); }
 
+// ------------------------------
+// 🧭 Config (ดึงจาก query + default Staff)
+// ------------------------------
+const BRANCH_ID = Number(getQuery('branchId') || 1);
+const EMPLOYEE_ID = Number(getQuery('employeeId') || 2);
 // ------------------------------
 // 🚀 เมื่อโหลดหน้า
 // ------------------------------
@@ -113,4 +114,18 @@ async function loadPickupHistory() {
     console.error('❌ Error loading pickup history:', err);
     tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-red-500">โหลดข้อมูลไม่สำเร็จ</td></tr>`;
   }
+}
+function patchSidebarLinks(){
+  const addParams = (sel, file) => {
+    const a = document.querySelector(sel);
+    if (!a) return;
+    const url = new URL(`../pages/${file}`, window.location.href);
+    url.searchParams.set('employeeId', String(this.EMPLOYEE_ID));
+    url.searchParams.set('branchId', String(this.BRANCH_ID));
+    a.href = url.toString();
+  };
+  addParams('a[href$="dashboard-staff.html"]', 'dashboard-staff.html');
+  addParams('a[href$="create-order.html"]', 'create-order.html');
+  addParams('a[href$="all-order.html"]', 'all-order.html');
+  addParams('a[href$="pickup.html"]', 'pickup.html');
 }

@@ -28,6 +28,7 @@ function fmtDT(d){
 class StaffDashboardUI {
   constructor(){
     this.branchId = Number(getQuery('branchId') || 1);
+    this.employeeId = Number(getQuery('employeeId') || 2);
 
     this.elToday = document.getElementById('cntToday');
     this.elMonth = document.getElementById('cntMonth');
@@ -43,6 +44,23 @@ class StaffDashboardUI {
     this.loadReturns();
 
     document.getElementById('btnLogout')?.addEventListener('click', ()=>this.logout());
+    
+    this.patchSidebarLinks();
+  }
+
+  patchSidebarLinks(){
+    const addParams = (sel, file) => {
+      const a = document.querySelector(sel);
+      if (!a) return;
+      const url = new URL(`../pages/${file}`, window.location.href);
+      url.searchParams.set('employeeId', String(this.employeeId));
+      url.searchParams.set('branchId', String(this.branchId));
+      a.href = url.toString();
+    };
+    addParams('a[href$="dashboard-staff.html"]', 'dashboard-staff.html');
+    addParams('a[href$="create-order.html"]', 'create-order.html');
+    addParams('a[href$="all-order.html"]', 'all-order.html');
+    addParams('a[href$="pickup.html"]', 'pickup.html');
   }
 
   async loadSummary(){
@@ -122,6 +140,7 @@ class StaffDashboardUI {
 
     const nav = (file)=>{
       const url = new URL(`../pages/${file}`, window.location.href);
+      url.searchParams.set('employeeId', String(this.employeeId));
       url.searchParams.set('branchId', String(this.branchId));
       window.location.href = url.toString();
     };
@@ -134,10 +153,6 @@ class StaffDashboardUI {
   logout(){
     const ok = confirm('คุณต้องการออกจากระบบหรือไม่?');
     if (!ok) return;
-    // ล้างข้อมูล session/localStorage ถ้ามี
-    // localStorage.clear();
-    // sessionStorage.clear();
-    // กลับไปหน้า login
     window.location.href = '../pages/login.html';
   }
 }

@@ -37,11 +37,9 @@ class AuthController {
       }
       const result = await AuthService.login({ role, phone, password });
       if (!result) return res.status(401).json({ message: 'เบอร์โทรศัพท์หรือรหัสผ่านไม่ถูกต้อง' });
-
-      // ชั่วคราว: ส่ง path สำหรับ redirect ไปหน้า create-order เสมอ
-      return res.json({ ...result, redirect: '/frontend/public/pages/create-order.html' });
+        return res.json(result);
     } catch (err) {
-      return res.status(500).json({ message: err.message });
+        return res.status(500).json({ message: err.message });
     }
   }
 }

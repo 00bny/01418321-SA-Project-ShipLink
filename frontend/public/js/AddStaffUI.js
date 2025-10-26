@@ -7,8 +7,25 @@ function baht(n){ return '฿' + Number(n||0).toLocaleString(undefined,{minimumF
 class AddStaffUI {
   constructor(){
     this.branchId = Number(getQuery('branchId') || 1);
+    this.employeeId = Number(getQuery('employeeId') || 1);
+
     document.getElementById('btnAdd').addEventListener('click', ()=>this.submit());
     document.getElementById('btnLogout')?.addEventListener('click', ()=>this.logout());
+  
+    this.patchSidebarLinks();
+  }
+
+  patchSidebarLinks(){
+    const addParams = (sel, file) => {
+      const a = document.querySelector(sel);
+      if (!a) return;
+      const url = new URL(`../pages/${file}`, window.location.href);
+      url.searchParams.set('employeeId', String(this.employeeId));
+      url.searchParams.set('branchId', String(this.branchId));
+      a.href = url.toString();
+    };
+    addParams('a[href$="dashboard-manager.html"]', 'dashboard-manager.html');
+    addParams('a[href$="add-staff.html"]', 'add-staff.html');
   }
 
   async submit(){

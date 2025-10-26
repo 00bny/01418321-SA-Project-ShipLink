@@ -62,8 +62,7 @@ CREATE TABLE PickupRequest (
 CREATE TABLE `Order` (
   OrderID INT AUTO_INCREMENT PRIMARY KEY,
   TrackingNumber VARCHAR(64) NULL,
-  OrderStatus VARCHAR(64) NOT NULL DEFAULT 'Pending', -- รอชำระเงิน (Pending) > ชำระเงินแล้ว (Paid) > รอเข้ารับ (RequestedPickup) > 
-  เข้ารับพัสดุแล้ว (Pickup) > อยู่ระหว่างจัดส่ง (In Transit) > จัดส่งเสร็จสิน (Success) / จัดส่งไม่สำเร็จ (Fail) / ตีกลับ (Return)
+  OrderStatus VARCHAR(64) NOT NULL DEFAULT 'Pending', -- รอชำระเงิน (Pending) > ชำระเงินแล้ว (Paid) > รอเข้ารับ (RequestedPickup) > เข้ารับพัสดุแล้ว (Pickup) > อยู่ระหว่างจัดส่ง (In Transit) > จัดส่งเสร็จสิน (Success) / จัดส่งไม่สำเร็จ (Fail) / ตีกลับ (Return)
   OrderDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   ParcelType VARCHAR(64) NOT NULL,
   Width DECIMAL(8,2) NOT NULL DEFAULT 0,
@@ -114,11 +113,11 @@ INSERT INTO Wallet (Balance) VALUES (1000.00);
 INSERT INTO Branch (BranchName, BranchAddress, WalletID)
 VALUES ('ShipLink Bangkhen', '123 Main Rd', 1);
 
--- รหัสคือ 1 --
+-- รหัสผ่านคือ 1 --
 INSERT INTO Employee (EmployeeName,EmployeePhone,EmployeePassword,EmployeePosition,BranchID)
 VALUES ('Santi','0800000000','$2a$10$T1B58WgXY3I6E88/2wdH5u6ghn/YKFGo3iitUpt47LuveRXFJ1je.','Manager',1);
 
--- รหัสคือ 1 --
+-- รหัสผ่านคือ 1 --
 INSERT INTO Employee (EmployeeName,EmployeePhone,EmployeePassword,EmployeePosition,BranchID)
 VALUES ('Nunthaporn Leryotpornchai','0810000000','$2a$10$T1B58WgXY3I6E88/2wdH5u6ghn/YKFGo3iitUpt47LuveRXFJ1je.','Staff',1);
 
@@ -149,3 +148,7 @@ VALUES ('TH42354353','In Transit',CURRENT_TIMESTAMP,'-',1,1.00,1,1,30.00,0.00,CU
 
 INSERT INTO `Order` (TrackingNumber,OrderStatus,OrderDate,ParcelType,Width,Weight,Height,Length,ShipCost,AddOnCost,UpdatedAt,IsReturnContacted,SenderID,ReceiverID,EmployeeID,CompanyID,BranchID)
 VALUES ('TH34234231','Return',CURRENT_TIMESTAMP,'Document',1,1.00,1,1,30.00,0.00,CURRENT_TIMESTAMP,FALSE,1,1,2,2,1);
+
+INSERT INTO Wallet (Balance) VALUES (1234.00);
+INSERT INTO Branch (BranchName, BranchAddress, WalletID)
+VALUES ('ShipLink Bangbuathong', '123 Main Rd', 6);

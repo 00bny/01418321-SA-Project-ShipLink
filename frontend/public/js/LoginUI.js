@@ -44,11 +44,25 @@ class LoginUI {
         return Popup.error('ไม่พบบัญชีผู้ใช้');
       }
 
-      if (res.redirect) {
-        window.location.href = res.redirect;
-      } else {
-        Popup.error('เข้าสู่ระบบไม่สำเร็จ');
+      if (role == 'employee' && res.employee) {
+        const empId = res.employee.EmployeeID;
+        const branchId = res.employee.BranchID;
+        const pos = (res.employee.EmployeePosition || '').toLowerCase();
+        const base = '/frontend/public/pages/';
+        if (pos === 'manager') {
+            window.location.href = `${base}dashboard-manager.html?employeeId=${empId}&branchId=${branchId}`;
+            return;
+        }
+
+        window.location.href = `${base}dashboard-staff.html?employeeId=${empId}&branchId=${branchId}`;
+        return
       }
+
+      if (role === 'company' && res.company) {
+        window.location.href = `/frontend/public/pages/company-dashboard.html`
+      }
+
+      Popup.error('เข้าสู่ระบบไม่สำเร็จ');
 
     } catch (e) {
       console.error('Login error:', e);

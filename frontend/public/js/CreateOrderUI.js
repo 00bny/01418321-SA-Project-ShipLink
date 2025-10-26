@@ -2,14 +2,17 @@ import { $, $$, mute, unmute, scrollToEl, fmtMoney } from './modules/Dom.js';
 import { ApiClient } from './modules/apiClient.js';
 import { Popup } from './modules/Popup.js';
 
+function getQuery(name){ return new URLSearchParams(window.location.search).get(name); }
+function baht(n){ return '฿' + Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
 class CreateOrderUI {
   constructor(){
     // state
     this.sender = null; this.receiver = null;
     this.selectedQuote = null;
-    this.employeeId = 1;
-    this.branchId  = 1;
-    this.editingOrderId = null;   // <<<<<< เพิ่มสถานะแก้ไข
+    this.employeeId = Number(getQuery('employeeId') || 2);
+    this.branchId  = Number(getQuery('branchId') || 1);
+    this.editingOrderId = null;
 
     // step1
     $('#btnSearchSender').onclick   = () => this.search('sender');
@@ -38,10 +41,27 @@ class CreateOrderUI {
 
     // initial checkout
     this.refreshCheckout();
-    this.loadBranchBalance();
     this.initWalletDropdown();
+    this.loadWallet();
 
     document.getElementById('btnLogout')?.addEventListener('click', ()=>this.logout());
+  
+    this.patchSidebarLinks();
+  }
+
+  patchSidebarLinks(){
+    const addParams = (sel, file) => {
+      const a = document.querySelector(sel);
+      if (!a) return;
+      const url = new URL(`../pages/${file}`, window.location.href);
+      url.searchParams.set('employeeId', String(this.employeeId));
+      url.searchParams.set('branchId', String(this.branchId));
+      a.href = url.toString();
+    };
+    addParams('a[href$="dashboard-staff.html"]', 'dashboard-staff.html');
+    addParams('a[href$="create-order.html"]', 'create-order.html');
+    addParams('a[href$="all-order.html"]', 'all-order.html');
+    addParams('a[href$="pickup.html"]', 'pickup.html');
   }
 
   // ---------- helpers ----------
@@ -421,62 +441,36 @@ class CreateOrderUI {
     return '฿' + Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
   }
 
-  async loadBranchBalance(){
-    try {
-        const r = await ApiClient.getBranchBalance(this.branchId);
-        const el = document.getElementById('walletBalance');
-        if (el) el.textContent = this.fmtMoneyTHB(r?.balance || 0);
-    } catch { /* ignore */ }
-    }
-
-    initWalletDropdown(){
+  // ------- wallet dropdown -------
+  async loadWallet(){
+    try{
+      const r = await ApiClient.getBranchBalance(this.branchId);
+      document.getElementById('walletBalance').textContent = baht(r?.balance||0);
+    }catch{}
+  }
+  initWalletDropdown(){
     const btn = document.getElementById('walletBtn');
     const menu = document.getElementById('walletMenu');
-    const topup = document.getElementById('actTopup');
-    const withdraw = document.getElementById('actWithdraw');
-    const hist = document.getElementById('actHist');
     if (!btn || !menu) return;
 
-    btn.addEventListener('click', (e)=>{
-        e.stopPropagation();
-        menu.classList.toggle('hidden');
-    });
-    document.addEventListener('click', ()=>{
-        if (!menu.classList.contains('hidden')) menu.classList.add('hidden');
-    });
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); menu.classList.toggle('hidden'); });
+    document.addEventListener('click', ()=>{ if (!menu.classList.contains('hidden')) menu.classList.add('hidden'); });
 
-    // ไปหน้าเติมเงิน (ของสาขา)
-    if (topup){
-        topup.addEventListener('click', ()=>{
-            const url = new URL('../pages/branch-topup.html', window.location.href);
-            url.searchParams.set('branchId', String(this.branchId));
-            window.location.href = url.toString();
-        });
-    }
-    if (withdraw){
-        withdraw.addEventListener('click', ()=>{
-            const url = new URL('../pages/branch-withdraw.html', window.location.href);
-            url.searchParams.set('branchId', String(this.branchId));
-            window.location.href = url.toString();
-        });
-    }
-    if (hist){
-        hist.addEventListener('click', ()=>{
-            const url = new URL('../pages/branch-transactions.html', window.location.href);
-            url.searchParams.set('branchId', String(this.branchId));
-            window.location.href = url.toString();
-        });
-    }
+    const nav = (file)=>{
+      const url = new URL(`../pages/${file}`, window.location.href);
+      url.searchParams.set('employeeId', String(this.employeeId));
+      url.searchParams.set('branchId', String(this.branchId));
+      window.location.href = url.toString();
+    };
+    document.getElementById('actTopup')?.addEventListener('click', ()=>nav('branch-topup.html'));
+    document.getElementById('actWithdraw')?.addEventListener('click', ()=>nav('branch-withdraw.html'));
+    document.getElementById('actHist')?.addEventListener('click', ()=>nav('branch-transactions.html'));
   }
 
       // ------- logout -------
   logout(){
     const ok = confirm('คุณต้องการออกจากระบบหรือไม่?');
     if (!ok) return;
-    // ล้างข้อมูล session/localStorage ถ้ามี
-    // localStorage.clear();
-    // sessionStorage.clear();
-    // กลับไปหน้า login
     window.location.href = '../pages/login.html';
   }
 }
