@@ -57,6 +57,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
+// เพิ่ม helper ด้านบนไฟล์ หรือเหนือ loadPickupRequests()
+function formatDateTimeLocal(value) {
+  if (!value) return '-';
+  let s = String(value).trim();
+
+  // รองรับทั้ง 'YYYY-MM-DD HH:mm:ss' และ 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  s = s.replace('T', ' ').replace('Z', '');
+  if (s.includes('.')) s = s.split('.')[0];
+
+  const [datePart, timePart] = s.split(' ');
+  if (!datePart || !timePart) return s;
+
+  const [y, m, d] = datePart.split('-');
+  const [hh, mm] = timePart.split(':');
+
+  // ใช้ปีคริสต์ศักราชตามที่ต้องการ
+  return `${d}/${m}/${y} ${hh}:${mm}`;
+}
+
 async function loadPickupRequests() {
   if (!tbody) return;
   tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-gray-400">กำลังโหลด...</td></tr>`;
@@ -137,7 +156,7 @@ function renderFilteredRequests() {
     return `
       <tr class="border-b">
         <td class="py-2 border">${r.RequestID}</td>
-        <td class="py-2 border">${new Date(r.CreatedDate).toLocaleString('th-TH')}</td>
+        <td class="py-2 border">${formatDateTimeLocal(r.CreatedDate)}</td>
         <td class="py-2 border">${r.ParcelCount ?? 0}</td>
         <td class="py-2 border text-center">${statusMap[r.RequestStatus] || '-'}</td>
         <td class="py-2 border">${actionBtn}</td>

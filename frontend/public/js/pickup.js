@@ -81,6 +81,25 @@ async function loadCompanies() {
   });
 }
 
+// เพิ่ม helper ด้านบนไฟล์ หรือเหนือ loadPickupHistory()
+function formatDateTimeLocal(value) {
+  if (!value) return '-';
+  let s = String(value).trim();
+
+  // รองรับทั้ง 'YYYY-MM-DD HH:mm:ss' และ 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  s = s.replace('T', ' ').replace('Z', '');
+  if (s.includes('.')) s = s.split('.')[0];
+
+  const [datePart, timePart] = s.split(' ');
+  if (!datePart || !timePart) return s;
+
+  const [y, m, d] = datePart.split('-');
+  const [hh, mm] = timePart.split(':');
+
+  // ใช้ปีคริสต์ศักราชตามที่ต้องการ
+  return `${d}/${m}/${y} ${hh}:${mm}`;
+}
+
 // ------------------------------
 // 🕓 โหลดประวัติการเรียกรับพัสดุ
 // ------------------------------
@@ -100,11 +119,7 @@ async function loadPickupHistory() {
       <tr class="border-b border-border-light">
         <td class="py-2">${item.RequestNo}</td>
         <td class="py-2">${item.ShippingCompany}</td>
-        <td class="py-2">${
-          item.DateTime
-            ? new Date(item.DateTime).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })
-            : '-'
-        }</td>
+        <td class="py-2">${formatDateTimeLocal(item.DateTime)}</td>
         <td class="py-2">${item.Status}</td>
         <td class="py-2">${item.Staff || '-'}</td>
       </tr>

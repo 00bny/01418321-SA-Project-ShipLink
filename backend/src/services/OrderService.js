@@ -9,8 +9,8 @@ function calcShipCost({ width, height, length, weight, rate }) {
 const STATUS_TH = {
   Pending   : 'รอชำระเงิน',
   Paid      : 'ชำระเงินแล้ว',
+  RequestedPickup : 'รอขนส่งเข้ารับ',
   Pickup    : 'เข้ารับพัสดุแล้ว',
-  RequestedPickup : 'รอเข้ารับ',
   'In Transit': 'อยู่ระหว่างจัดส่ง',
   Success   : 'จัดส่งเสร็จสิ้น',
   Fail      : 'จัดส่งไม่สำเร็จ',

@@ -106,7 +106,7 @@ ALTER TABLE `Order`
 ADD COLUMN FailReason TEXT NULL;
 
 ALTER TABLE `Order`
-ADD COLUMN ReturnCount INT NULL;
+ADD COLUMN ReturnCount INT NOT NULL DEFAULT 0;
 
 -- ---- Seed ----
 INSERT INTO Wallet (Balance) VALUES (1000.00);
