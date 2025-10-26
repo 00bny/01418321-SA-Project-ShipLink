@@ -5,6 +5,8 @@ function getQuery(name){ return new URLSearchParams(window.location.search).get(
 const COMPANY_ID = Number(getQuery("companyId") || 1);
 
 document.addEventListener("DOMContentLoaded", async () => {
+  patchSidebarLinks();
+
   initCompanyWalletDropdown();
   await loadCompanyWalletBalance();
   bindLogout();
@@ -112,3 +114,21 @@ function box(title, value){
     </div>
   `;
 }
+
+function patchSidebarLinks(){
+  const addParams = (sel, file) => {
+    const a = document.querySelector(sel);
+    if (!a) return;
+    const url = new URL(`../pages/${file}`, window.location.href);
+    url.searchParams.set("companyId", String(COMPANY_ID));
+    a.href = url.toString();
+  };
+
+  addParams('a[href$="company-dashboard.html"]', 'company-dashboard.html');
+  addParams('a[href$="company-delivery.html"]', 'company-delivery.html');
+  addParams('a[href$="company-pickup.html"]', 'company-pickup.html');
+  addParams('a[href$="company-return.html"]', 'company-return.html');
+  addParams('a[href$="company-transactions.html"]', 'company-transactions.html');
+  addParams('a[href$="company-withdraw.html"]', 'company-withdraw.html');
+}
+

@@ -1,7 +1,9 @@
 import { ApiClient } from './modules/apiClient.js';
 import { initCompanyWalletDropdown, loadCompanyWalletBalance } from "./companyWalletUI.js";
 
-const COMPANY_ID = 1; // จำลองบริษัทขนส่ง
+function getQuery(name){ return new URLSearchParams(window.location.search).get(name); }
+const COMPANY_ID = Number(getQuery("companyId") || 1);
+
 let tbody, modal, form;
 let allRequests = []; // เก็บข้อมูลทั้งหมด
 let currentStatus = 'all';
@@ -14,6 +16,8 @@ const statusMap = {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
+  patchSidebarLinks();
+
   tbody = document.getElementById('company-pickup-body');
   modal = document.getElementById('confirmModal');
   form = document.getElementById('confirmForm');
@@ -23,6 +27,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   initCompanyWalletDropdown();
   await loadCompanyWalletBalance();
+
+  document.getElementById('btnLogout')?.addEventListener('click', logout);
 
   // ปุ่มยกเลิกใน modal
   document.getElementById('btnCancel').addEventListener('click', () => {
@@ -211,4 +217,26 @@ function openModal(requestId) {
   document.getElementById('staffName').value = '';
   document.getElementById('staffPhone').value = '';
   modal.classList.remove('hidden');
+}
+
+function logout(){
+  if (!confirm('ออกจากระบบ?')) return;
+  window.location.href = '../pages/login.html';
+}
+
+function patchSidebarLinks(){
+  const addParams = (sel, file) => {
+    const a = document.querySelector(sel);
+    if (!a) return;
+    const url = new URL(`../pages/${file}`, window.location.href);
+    url.searchParams.set("companyId", String(COMPANY_ID));
+    a.href = url.toString();
+  };
+
+  addParams('a[href$="company-dashboard.html"]', 'company-dashboard.html');
+  addParams('a[href$="company-delivery.html"]', 'company-delivery.html');
+  addParams('a[href$="company-pickup.html"]', 'company-pickup.html');
+  addParams('a[href$="company-return.html"]', 'company-return.html');
+  addParams('a[href$="company-transactions.html"]', 'company-transactions.html');
+  addParams('a[href$="company-withdraw.html"]', 'company-withdraw.html');
 }

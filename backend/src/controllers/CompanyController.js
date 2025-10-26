@@ -3,8 +3,11 @@ const bcrypt = require('bcryptjs');
 
 class CompanyController {
   static async getByPhone(phone) {
-    const [rows] = await DB.query('SELECT * FROM ShippingCompany WHERE CompanyPhone = ?', [phone]);
-    return rows?.length ? rows[0] : null;
+    const rows = await DB.query(
+      `SELECT * FROM ShippingCompany WHERE CompanyPhone = ?`,
+      [phone]
+    );
+    return rows[0] || null;
   }
 
   static async create({ name, phone, passwordHash, shippingRate, sharePercent, walletId }) {

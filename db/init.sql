@@ -125,19 +125,19 @@ VALUES ('Nunthaporn Leryotpornchai','0810000000','$2a$10$T1B58WgXY3I6E88/2wdH5u6
 
 INSERT INTO Wallet (Balance) VALUES (645.00);
 INSERT INTO ShippingCompany (CompanyName, CompanyPhone, CompanyPassword, ShippingRate, SharePercent, WalletID)
-VALUES ('Unicorn Express','0987654321','hash',15.00,11.50,2);
+VALUES ('Unicorn Express','0987654321','$2a$10$T1B58WgXY3I6E88/2wdH5u6ghn/YKFGo3iitUpt47LuveRXFJ1je.',15.00,11.50,2);
 
 INSERT INTO Wallet (Balance) VALUES (500.00);
 INSERT INTO ShippingCompany (CompanyName, CompanyPhone, CompanyPassword, ShippingRate, SharePercent, WalletID)
-VALUES ('Hell Express','0987654322','hash',13.00,12.00,3);
+VALUES ('Hell Express','0987654322','$2a$10$T1B58WgXY3I6E88/2wdH5u6ghn/YKFGo3iitUpt47LuveRXFJ1je.',13.00,12.00,3);
 
 INSERT INTO Wallet (Balance) VALUES (645.00);
 INSERT INTO ShippingCompany (CompanyName, CompanyPhone, CompanyPassword, ShippingRate, WalletID)
-VALUES ('Anaconda Express','0987654323','hash',14.50,4);
+VALUES ('Anaconda Express','0987654323','$2a$10$T1B58WgXY3I6E88/2wdH5u6ghn/YKFGo3iitUpt47LuveRXFJ1je.',14.50,4);
 
 INSERT INTO Wallet (Balance) VALUES (1000.00);
 INSERT INTO ShippingCompany (CompanyName, CompanyPhone, CompanyPassword, ShippingRate, WalletID)
-VALUES ('RICH Express','0987654324','hash',13.25,5);
+VALUES ('RICH Express','0987654324','$2a$10$T1B58WgXY3I6E88/2wdH5u6ghn/YKFGo3iitUpt47LuveRXFJ1je.',13.25,5);
 
 INSERT INTO Customer (CustomerName,CustomerPhone,CustomerAddress)
 VALUES ('Warali Foochareon','0999999999','123 Somewhere In Bangkok 99999');
