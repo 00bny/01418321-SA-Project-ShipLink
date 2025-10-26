@@ -1,9 +1,10 @@
-import { ApiClient } from './apiClient.js';
+import { ApiClient } from './modules/apiClient.js';
 
 const STATUS_CLASS = {
   Pending:    'bg-amber-100 text-amber-700',
   Paid:       'bg-blue-100 text-blue-700',
   Pickup:     'bg-purple-100 text-purple-700',
+  RequestedPickup : 'bg-orange-100 text-orange-700',
   'In Transit':'bg-sky-100 text-sky-700',
   Success:    'bg-green-100 text-green-700',
   Fail:       'bg-red-100 text-red-700',
@@ -24,7 +25,7 @@ function fmtDT(d) {
 function getQuery(name){ return new URLSearchParams(window.location.search).get(name); }
 function baht(n){ return '฿' + Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
-export default class AllOrderUI {
+class AllOrderUI {
   constructor(){
     this.branchId = Number(getQuery('branchId') || 1);
     this.rowsEl = document.getElementById('rows');
@@ -38,6 +39,9 @@ export default class AllOrderUI {
     this.data = [];
     this.bindFilters();
     this.load();
+
+    document.getElementById('btnLogout')?.addEventListener('click', ()=>this.logout());
+
   }
 
   bindFilters(){
@@ -110,4 +114,17 @@ export default class AllOrderUI {
     if (withdraw) withdraw.addEventListener('click', ()=> nav('branch-withdraw.html'));
     if (hist)    hist.addEventListener('click', ()=> nav('branch-transactions.html'));
   }
+
+      // ------- logout -------
+  logout(){
+    const ok = confirm('คุณต้องการออกจากระบบหรือไม่?');
+    if (!ok) return;
+    // ล้างข้อมูล session/localStorage ถ้ามี
+    // localStorage.clear();
+    // sessionStorage.clear();
+    // กลับไปหน้า login
+    window.location.href = '../pages/login.html';
+  }
 }
+
+new AllOrderUI();

@@ -26,7 +26,6 @@
       <h1 class="text-2xl font-extrabold">ShipLink</h1>
     </div>
     <nav class="mt-4">
-    <nav class="mt-4">
       <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100" href="./dashboard-staff.html">
         <span class="material-icons">dashboard</span><span class="ml-3">Dashboard</span>
       </a>
@@ -40,7 +39,14 @@
         <span class="material-icons">inventory</span><span class="ml-3">Pickup</span>
       </a>
     </nav>
-    </nav>
+            <!-- Logout button -->
+    <div class="w-64 px-6">
+      <button id="btnLogout" 
+              class="w-full flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 rounded-lg py-2 font-semibold transition">
+        <span class="material-icons mr-2">logout</span>
+        Logout
+      </button>
+    </div>
   </aside>
 
   <!-- Content -->
@@ -76,6 +82,6 @@
     </main>
   </div>
 </div>
-<script type="module" src="../js/branch-withdraw.js"></script>
+<script type="module" src="../js/BranchWithdrawUI.js"></script>
 </body>
 </html>

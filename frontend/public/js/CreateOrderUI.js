@@ -1,8 +1,8 @@
-import { $, $$, mute, unmute, scrollToEl, fmtMoney } from './Dom.js';
-import { ApiClient } from './apiClient.js';
-import { Popup } from './Popup.js';
+import { $, $$, mute, unmute, scrollToEl, fmtMoney } from './modules/Dom.js';
+import { ApiClient } from './modules/apiClient.js';
+import { Popup } from './modules/Popup.js';
 
-export default class CreateOrderUI {
+class CreateOrderUI {
   constructor(){
     // state
     this.sender = null; this.receiver = null;
@@ -40,6 +40,8 @@ export default class CreateOrderUI {
     this.refreshCheckout();
     this.loadBranchBalance();
     this.initWalletDropdown();
+
+    document.getElementById('btnLogout')?.addEventListener('click', ()=>this.logout());
   }
 
   // ---------- helpers ----------
@@ -467,4 +469,16 @@ export default class CreateOrderUI {
     }
   }
 
+      // ------- logout -------
+  logout(){
+    const ok = confirm('คุณต้องการออกจากระบบหรือไม่?');
+    if (!ok) return;
+    // ล้างข้อมูล session/localStorage ถ้ามี
+    // localStorage.clear();
+    // sessionStorage.clear();
+    // กลับไปหน้า login
+    window.location.href = '../pages/login.html';
+  }
 }
+
+new CreateOrderUI();

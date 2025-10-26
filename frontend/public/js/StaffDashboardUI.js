@@ -1,10 +1,11 @@
-import { ApiClient } from './apiClient.js';
-import { Popup } from './Popup.js';
+import { ApiClient } from './modules/apiClient.js';
+import { Popup } from './modules/Popup.js';
 
 const STATUS_LABEL = {
   Pending: 'รอชำระเงิน',
   Paid: 'ชำระเงินแล้ว',
   Pickup: 'เข้ารับพัสดุแล้ว',
+  RequestedPickup : 'รอเข้ารับ',
   'In Transit': 'อยู่ระหว่างจัดส่ง',
   Success: 'จัดส่งเสร็จสิ้น',
   Fail: 'จัดส่งไม่สำเร็จ',
@@ -24,7 +25,7 @@ function fmtDT(d){
   return `${dd}/${mm}/${yy} ${hh}:${mi}`;
 }
 
-export default class StaffDashboardUI {
+class StaffDashboardUI {
   constructor(){
     this.branchId = Number(getQuery('branchId') || 1);
 
@@ -40,6 +41,8 @@ export default class StaffDashboardUI {
 
     this.loadSummary();
     this.loadReturns();
+
+    document.getElementById('btnLogout')?.addEventListener('click', ()=>this.logout());
   }
 
   async loadSummary(){
@@ -52,7 +55,7 @@ export default class StaffDashboardUI {
     this.elMonth.textContent = counts.month ?? 0;
     this.elTotal.textContent = counts.total ?? 0;
 
-    const keys = ['Pending','Paid','Pickup','In Transit','Success','Fail','Return'];
+    const keys = ['Pending','Paid','Pickup','RequestedPickup','In Transit','Success','Fail','Return'];
     this.statusWrap.innerHTML = keys.map(k=>{
       const val = sc[k] || 0;
       return `
@@ -126,4 +129,17 @@ export default class StaffDashboardUI {
     document.getElementById('actWithdraw')?.addEventListener('click', ()=>nav('branch-withdraw.html'));
     document.getElementById('actHist')?.addEventListener('click', ()=>nav('branch-transactions.html'));
   }
+
+    // ------- logout -------
+  logout(){
+    const ok = confirm('คุณต้องการออกจากระบบหรือไม่?');
+    if (!ok) return;
+    // ล้างข้อมูล session/localStorage ถ้ามี
+    // localStorage.clear();
+    // sessionStorage.clear();
+    // กลับไปหน้า login
+    window.location.href = '../pages/login.html';
+  }
 }
+
+new StaffDashboardUI();

@@ -1,10 +1,10 @@
-import { ApiClient } from './apiClient.js';
-import { Popup } from './Popup.js';
+import { ApiClient } from './modules/apiClient.js';
+import { Popup } from './modules/Popup.js';
 
 function fmt(n){ return '฿' + Number(n||0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function getQuery(name){ return new URLSearchParams(window.location.search).get(name); }
 
-export default class BranchTopupUI {
+class BranchTopupUI {
   constructor(){
     this.branchId = Number(getQuery('branchId') || 1);
     this.employeeId = 1; // TODO: ดึงจาก session/login ในอนาคต
@@ -22,6 +22,8 @@ export default class BranchTopupUI {
 
     this.btnConfirm.onclick = () => this.topup();
     this.refreshBalance();
+
+    document.getElementById('btnLogout')?.addEventListener('click', ()=>this.logout());
   }
 
   async refreshBalance(){
@@ -40,4 +42,17 @@ export default class BranchTopupUI {
       this.refreshBalance();
     } else Popup.error(res?.message || 'ไม่สามารถเติมเงินได้');
   }
+
+      // ------- logout -------
+  logout(){
+    const ok = confirm('คุณต้องการออกจากระบบหรือไม่?');
+    if (!ok) return;
+    // ล้างข้อมูล session/localStorage ถ้ามี
+    // localStorage.clear();
+    // sessionStorage.clear();
+    // กลับไปหน้า login
+    window.location.href = '../pages/login.html';
+  }
 }
+
+new BranchTopupUI();
