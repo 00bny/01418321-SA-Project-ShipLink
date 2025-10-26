@@ -100,6 +100,19 @@ class OrderController {
     }
   }
 
+  static async deliverSuccess(req, res) {
+    try {
+      const orderId = Number(req.params.id);
+      const result = await OrderService.markDeliveredSuccess(orderId);
+      res.json({
+        message: "จัดส่งสำเร็จและอัปเดตรายได้แล้ว ✅",
+        ...result
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
 }
 
 module.exports = OrderController;

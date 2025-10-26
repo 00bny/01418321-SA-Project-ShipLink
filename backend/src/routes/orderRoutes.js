@@ -16,4 +16,6 @@ router.delete('/:id', OrderController.removePending);
 
 router.put('/status/:id', OrderController.updateStatus);
 
+router.post('/:id/deliver-success', OrderController.deliverSuccess);
+
 module.exports = router;
