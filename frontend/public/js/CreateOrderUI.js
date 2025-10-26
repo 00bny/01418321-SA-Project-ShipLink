@@ -29,7 +29,7 @@ class CreateOrderUI {
     $('#addon').addEventListener('input', () => this.updateFees());
     $('#btnAddOrder').onclick       = () => this.addOrUpdateOrder();
     $('#selectAll').onchange        = (e)=> this.toggleAll(e.target.checked);
-    $('#btnPayAll').onclick         = () => this.payAll();
+    $('#btnPaySelected').onclick         = () => this.paySelected();
 
     // numeric guards
     this.attachNumericGuards();
@@ -386,6 +386,33 @@ class CreateOrderUI {
     });
   }
 
+  async paySelected(){
+    const items = $$('#checkoutRows .chk').filter(c=>c.checked);
+    if (!items.length) return Popup.error('กรุณาเลือกออร์เดอร์ก่อน');
+
+    const totalCustomer = items.reduce((s,c)=> s + Number(c.dataset.amount), 0);
+    const ok = await Popup.confirm(
+      `ยืนยันการชำระเงิน ${items.length} รายการหรือไม่?\n\nยอดเรียกเก็บลูกค้า: ${this.fmtMoneyTHB(totalCustomer)}`
+    );
+    if (!ok) return;
+
+    const orderIds = items.map(c => Number(c.closest('tr').dataset.id));
+
+    const res = await ApiClient.checkoutPay({
+      branchId: this.branchId,
+      employeeId: this.employeeId,
+      orderIds
+    });
+
+    if (res.message === 'PAY_OK') {
+      Popup.info(`ชำระเงินสำเร็จ ${res.paidOrders} รายการ\nยอดตัดเงินในระบบ: ${this.fmtMoneyTHB(res.totalCut)}`);
+      await this.loadWallet();
+      await this.refreshCheckout();
+    } else {
+      Popup.error(res.message || 'เกิดข้อผิดพลาด');
+    }
+  }
+
   async loadOrderToForm(orderId){
     const o = await ApiClient.getOrder(orderId);
     if (!o?.OrderID) return Popup.error('ไม่พบบันทึกออร์เดอร์');
@@ -427,14 +454,6 @@ class CreateOrderUI {
   toggleAll(checked){
     $$('#checkoutRows .chk').forEach(c=> c.checked = checked);
     this.updateSelectedSummary();
-  }
-
-  async payAll(){
-    const res = await ApiClient.payAll(this.employeeId);
-    if (res?.message?.includes('ชำระเงิน')) {
-      Popup.info(`ชำระแล้ว ${res.count} รายการ, รวม ${fmtMoney(res.total)}`);
-      await this.refreshCheckout();
-    } else Popup.error(res.message || 'ไม่สามารถชำระเงินได้');
   }
 
   fmtMoneyTHB(n){

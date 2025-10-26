@@ -1,12 +1,18 @@
 const CheckoutService = require('../services/CheckoutService');
 
 class CheckoutController {
-  static async payAll(req, res) {
+  static async paySelected(req, res) {
     try {
-      const { employeeId } = req.body;
-      const result = await CheckoutService.payAll({ employeeId });
-      res.json({ message: 'ชำระเงินเสร็จสิ้น', ...result });
-    } catch (e) { res.status(400).json({ message: e.message }); }
+      const { branchId, employeeId, orderIds } = req.body;
+      if (!Array.isArray(orderIds) || orderIds.length === 0) {
+        return res.status(400).json({ message: 'กรุณาเลือกออร์เดอร์อย่างน้อย 1 รายการ' });
+      }
+
+      const result = await CheckoutService.payOrders({ branchId, employeeId, orderIds });
+      res.json(result);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
   }
 }
 module.exports = CheckoutController;

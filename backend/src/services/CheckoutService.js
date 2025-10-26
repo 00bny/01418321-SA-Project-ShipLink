@@ -1,58 +1,99 @@
 const DB = require('../config/DBConnector');
 
-function genTracking() {
-  return 'TH' + Math.random().toString(36).slice(2, 8).toUpperCase();
+function genTracking(orderId) {
+  const ts = Date.now().toString().slice(-6);
+  return `TH${ts}${orderId}`;
 }
 
 class CheckoutService {
-  static async payAll({ employeeId }) {
+  static async payOrders({ branchId, employeeId, orderIds }) {
+    const branchIdNum = Number(branchId);
+    const employeeIdNum = Number(employeeId);
+    const ids = Array.isArray(orderIds) ? orderIds.map(Number).filter(n => Number.isFinite(n)) : [];
+
+    if (!ids.length) throw new Error('กรุณาเลือกออร์เดอร์อย่างน้อย 1 รายการ');
+
     const conn = await DB.getConnection();
     try {
       await conn.beginTransaction();
 
-      // 1) รวมยอดรอชำระ (UC-08: step 2-3)
-      const [orders] = await conn.execute(
-        'SELECT OrderID, ShipCost, AddOnCost, EmployeeID, CompanyID FROM `Order` WHERE OrderStatus="รอชำระเงิน" AND EmployeeID=?',
-        [employeeId]
+      const [orders] = await conn.query(
+        `SELECT OrderID, ShipCost, AddOnCost, CompanyID
+           FROM \`Order\`
+          WHERE OrderID IN (?) AND BranchID=? AND OrderStatus='Pending'`,
+        [ids, branchIdNum]
       );
-      const total = orders.reduce((s, o) => s + Number(o.ShipCost) + Number(o.AddOnCost), 0);
 
-      // 2) ดูกระเป๋าสาขา (หา branch + wallet จาก employee)
-      const [[emp]] = await conn.execute(
-        'SELECT E.EmployeeID, B.BranchID, B.WalletID FROM Employee E JOIN Branch B ON E.BranchID=B.BranchID WHERE E.EmployeeID=?',
-        [employeeId]
+      if (!orders.length) throw new Error('ไม่พบออร์เดอร์ที่รอชำระเงิน');
+
+      const [[w]] = await conn.query(
+        `SELECT w.WalletID, w.Balance, b.BranchName
+           FROM Branch b JOIN Wallet w ON w.WalletID=b.WalletID
+          WHERE b.BranchID=?`,
+        [branchIdNum]
       );
-      const [[wal]] = await conn.execute('SELECT Balance FROM Wallet WHERE WalletID=?', [emp.WalletID]);
-      if (!wal || Number(wal.Balance) < total) {
-        throw new Error('ยอดเงินใน Wallet ไม่พอ');
+      if (!w) throw new Error('ไม่พบกระเป๋าเงินของสาขา');
+
+      let totalCut = 0;
+      const updates = [];
+
+      for (const o of orders) {
+        const [[comp]] = await conn.query(
+          `SELECT SharePercent FROM ShippingCompany WHERE CompanyID=?`,
+          [o.CompanyID]
+        );
+        const share = Number(comp?.SharePercent ?? 0);
+        const ship = Number(o.ShipCost ?? 0);
+        const addOn = Number(o.AddOnCost ?? 0);
+
+        const profit = +(ship * (share / 100)).toFixed(2);
+        const cut = +(ship - profit + addOn).toFixed(2); // เงินที่ตัดจาก Wallet (หลังหักกำไร + addon)
+        totalCut = +(totalCut + cut).toFixed(2);
+
+        updates.push({
+          orderId: o.OrderID,
+          cut,
+          chargeCustomer: +(ship + addOn).toFixed(2) // เงินที่เรียกลูกค้า
+        });
       }
 
-      // 3) หักเงิน wallet สาขา (UC-08: step 6)
-      await conn.execute('UPDATE Wallet SET Balance=Balance-? WHERE WalletID=?', [total, emp.WalletID]);
+      if (Number(w.Balance) < totalCut) {
+        throw new Error(`ยอดเงินในกระเป๋าไม่เพียงพอ (ต้องใช้ ${totalCut.toFixed(2)} บาท)`);
+      }
 
-      // 4) บันทึกประวัติ (UC-08: step 7)
-      await conn.execute(
-        'INSERT INTO TransactionHist (WalletID, EmployeeID, BranchID, CompanyID, TransactionAmount, TransactionType) VALUES (?,?,?,?,?,"PAYMENT")',
-        [emp.WalletID, employeeId, emp.BranchID, null, total]
+      await conn.query(
+        `UPDATE Wallet SET Balance = Balance - ? WHERE WalletID = ?`,
+        [totalCut, w.WalletID]
       );
 
-      // 5) อัปเดตสถานะ + tracking (UC-08: step 8-9)
-      for (const o of orders) {
-        const tracking = genTracking();
-        await conn.execute(
-          'UPDATE `Order` SET OrderStatus="ชำระเงินแล้ว", TrackingNumber=? WHERE OrderID=?',
-          [tracking, o.OrderID]
+      await conn.query(
+        `INSERT INTO TransactionHist (TransactionAmount, TransactionType, WalletID, EmployeeID, BranchID)
+         VALUES (?,?,?,?,?)`,
+        [totalCut, 'WITHDRAW', w.WalletID, employeeIdNum || null, branchIdNum || null]
+      );
+
+      for (const u of updates) {
+        const tracking = genTracking(u.orderId);
+        await conn.query(
+          `UPDATE \`Order\` SET OrderStatus='Paid', TrackingNumber=? WHERE OrderID=?`,
+          [tracking, u.orderId]
         );
       }
 
       await conn.commit();
-      return { total, count: orders.length };
-    } catch (e) {
+      return {
+        message: 'PAY_OK',
+        totalCut: totalCut.toFixed(2),
+        paidOrders: updates.length,
+        orders: updates
+      };
+    } catch (err) {
       await conn.rollback();
-      throw e;
+      throw err;
     } finally {
       conn.release();
     }
   }
 }
+
 module.exports = CheckoutService;

@@ -73,10 +73,11 @@ export const ApiClient = {
   },
 
   // --- checkout ---
-  async payAll(employeeId){
-    const r = await fetch(`${API}/api/checkout/pay-all`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ employeeId })
+  async checkoutPay({ branchId, employeeId, orderIds }) {
+    const r = await fetch(`${API}/api/checkout/pay`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ branchId, employeeId, orderIds })
     });
     return j(r);
   },
