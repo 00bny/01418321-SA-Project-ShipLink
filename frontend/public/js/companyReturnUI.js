@@ -1,5 +1,6 @@
 // frontend/js/company-return.js
 import { ApiClient } from './modules/apiClient.js';
+import { initCompanyWalletDropdown, loadCompanyWalletBalance } from "./companyWalletUI.js";
 
 function getQuery(name){ return new URLSearchParams(window.location.search).get(name); }
 const COMPANY_ID = Number(getQuery('companyId') || 1);
@@ -25,14 +26,6 @@ function patchSidebarLinks(){
 function logout(){
   if (!confirm('ออกจากระบบ?')) return;
   window.location.href = '../pages/login.html';
-}
-
-async function loadWallet(){
-  const r = await ApiClient.getCompanyWallet(COMPANY_ID);
-  document.getElementById('walletBalance').textContent =
-    '฿' + Number(r?.balance||0).toLocaleString(undefined,{
-      minimumFractionDigits:2, maximumFractionDigits:2
-    });
 }
 
 const statusMap = {
@@ -188,37 +181,13 @@ function initFilters(){
   searchInput.addEventListener('input', filterApply);
 }
 
-function initWalletDropdown(){
-  const btn = document.getElementById('walletBtn');
-  const menu = document.getElementById('walletMenu');
-  if (!btn || !menu) return;
-
-  btn.addEventListener('click', e=>{
-    e.stopPropagation();
-    menu.classList.toggle('hidden');
-  });
-
-  document.addEventListener('click', ()=>{
-    if (!menu.classList.contains('hidden')) menu.classList.add('hidden');
-  });
-
-  const nav = file=>{
-    const url = new URL(`../pages/${file}`, window.location.href);
-    url.searchParams.set('companyId', String(COMPANY_ID));
-    window.location.href = url.toString();
-  };
-
-  document.getElementById('actWithdraw')?.addEventListener('click', ()=>nav('company-withdraw.html'));
-  document.getElementById('actHist')?.addEventListener('click', ()=>nav('company-transactions.html'));
-}
-
 window.handleAction = handleAction;
 
 document.addEventListener('DOMContentLoaded', async ()=>{
   patchSidebarLinks();
   initFilters();
-  initWalletDropdown();
-  await loadWallet();
+  initCompanyWalletDropdown();
+  await loadCompanyWalletBalance();
   await loadReturnOrders();
   document.getElementById('btnLogout')?.addEventListener('click', logout);
 });

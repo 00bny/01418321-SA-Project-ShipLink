@@ -1,7 +1,8 @@
+// frontend/js/modules/apiClient.js
 const API = 'http://localhost:5002';
 
 async function j(res){
- const txt = await res.text();
+  const txt = await res.text();
   try { return JSON.parse(txt); } catch { return []; }
 }
 
@@ -242,7 +243,7 @@ export const ApiClient = {
   }
 };
 
-// ✅ Company Wallet API
+// ✅ Company Wallet API (ฝั่งขนส่ง) — ใช้ชื่อสอดคล้องกับ Branch*
 export const ApiCompanyWallet = {
   async getBalance(companyId) {
     const res = await fetch(`${API}/api/company-wallet/${companyId}`);
@@ -264,6 +265,5 @@ export const ApiCompanyWallet = {
     const res = await fetch(`${API}/api/company-wallet/${companyId}/history`);
     if (!res.ok) throw await res.json();
     return res.json();
-  },
+  }
 };
-

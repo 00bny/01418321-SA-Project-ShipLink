@@ -1,4 +1,5 @@
 import { ApiClient } from './modules/apiClient.js';
+import { initCompanyWalletDropdown, loadCompanyWalletBalance } from "./companyWalletUI.js";
 
 const COMPANY_ID = 1; // จำลองบริษัทขนส่ง
 let tbody, modal, form;
@@ -19,6 +20,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await loadPickupRequests();
   initFilters(); // ✅ เรียกใช้งานฟิลเตอร์
+
+  initCompanyWalletDropdown();
+  await loadCompanyWalletBalance();
 
   // ปุ่มยกเลิกใน modal
   document.getElementById('btnCancel').addEventListener('click', () => {

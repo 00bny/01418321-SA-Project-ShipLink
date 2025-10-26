@@ -44,7 +44,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/branch-wallet', require('./routes/branchWalletRoutes'));
 app.use('/api/pickup', require('./routes/pickupRoutes'));
 app.use('/api/companies', require('./routes/companyRoutes'));
-app.use('/api/company-wallet', require('./routes/walletRoutes'));
+app.use('/api/company-wallet', require('./routes/companyWalletRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 app.use('/api/company', require('./routes/companyReturnRoutes'));
 app.use('/api/order-status', require('./routes/orderStatusRoutes'));

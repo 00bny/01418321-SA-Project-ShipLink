@@ -1,4 +1,5 @@
 import { ApiClient } from "./modules/apiClient.js";
+import { initCompanyWalletDropdown, loadCompanyWalletBalance } from "./companyWalletUI.js";
 
 const COMPANY_ID = 1;
 let tbody;
@@ -13,6 +14,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupFilters();
   setupSearch();
   setupFailModal();
+
+  initCompanyWalletDropdown();
+  await loadCompanyWalletBalance();
+
 });
 
 // ✅ โหลดข้อมูลทั้งหมด
