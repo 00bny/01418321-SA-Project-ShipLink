@@ -58,7 +58,11 @@ class LoginUI {
       }
 
       if (role === 'company' && res.company) {
-        window.location.href = `/frontend/public/pages/company-dashboard.html`
+        const companyId = res.company.CompanyID;
+        const base = '/frontend/public/pages/';
+
+        window.location.href = `${base}company-dashboard.html?companyId=${companyId}`;
+        return;
       }
 
       Popup.error('เข้าสู่ระบบไม่สำเร็จ');

@@ -137,7 +137,7 @@ VALUES ('Anaconda Express','0987654323','$2a$10$T1B58WgXY3I6E88/2wdH5u6ghn/YKFGo
 
 INSERT INTO Wallet (Balance) VALUES (1000.00);
 INSERT INTO ShippingCompany (CompanyName, CompanyPhone, CompanyPassword, ShippingRate, WalletID)
-VALUES ('RICH Express','0987654324','hash',13.25,5);
+VALUES ('RICH Express','0987654324','$2a$10$T1B58WgXY3I6E88/2wdH5u6ghn/YKFGo3iitUpt47LuveRXFJ1je.',13.25,5);
 
 INSERT INTO Customer (CustomerName,CustomerPhone,CustomerAddress)
 VALUES ('Warali Foochareon','0999999999','123 Somewhere In Bangkok 99999');
