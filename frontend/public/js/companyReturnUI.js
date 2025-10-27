@@ -91,15 +91,21 @@ function renderTable(list){
     let actionHtml = `<span class="text-gray-400">-</span>`;
 
     if (o.OrderStatus === 'Fail' && o.ReturnCount === 0) {
-      actionHtml = `<button class="text-blue-600 hover:underline"
+      actionHtml = `<button class="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-4 py-1.5 rounded"
                    onclick="handleAction(${o.OrderID}, 'retry')">จัดส่งซ้ำ</button>`;
     }
     else if (o.OrderStatus === 'Fail' && o.ReturnCount === 1) {
-      actionHtml = `<button class="text-red-600 hover:underline"
-                   onclick="handleAction(${o.OrderID}, 'return')">ตีกลับพัสดุไปยังผู้ส่ง</button>`;
+      actionHtml = `<button class="bg-red-600 hover:bg-red-700 text-white font-medium text-sm px-4 py-1.5 rounded"
+                   onclick="handleAction(${o.OrderID}, 'return')">ตีกลับพัสดุ</button>`;
     }
     else if (o.OrderStatus === 'Return'){
-      actionHtml = `<span class="text-green-600 font-semibold">ตีกลับพัสดุไปยังผู้ส่งแล้วเรียบร้อย</span>`;
+      actionHtml = `<span class="text-red-600 font-medium opacity-80">ตีกลับพัสดุไปยังผู้ส่งแล้วเรียบร้อย</span>`;
+    }
+    else if (o.OrderStatus === 'Pickup' || o.OrderStatus === 'In Transit'){
+      actionHtml = `<span class="text-blue-600 font-medium opacity-80">กำลังดำเนินการจัดส่งอีกครั้ง</span>`;
+    }
+    else if (o.OrderStatus === 'Success' && o.ReturnCount > 0){
+      actionHtml = `<span class="text-green-600 font-medium opacity-80">จัดส่งสำเร็จแล้ว</span>`;
     }
 
     return `

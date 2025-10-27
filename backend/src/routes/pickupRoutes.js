@@ -10,5 +10,6 @@ router.post('/request', PickupController.createPickupRequest);
 router.get('/company/:id', PickupController.getRequestsByCompany);
 router.post('/confirm', PickupController.confirmPickup);
 router.put('/complete/:id', PickupController.completePickup);
+router.put('/reject/:id', PickupController.rejectPickup); 
 
 module.exports = router;

@@ -13,6 +13,7 @@ const statusMap = {
   RequestedPickup: 'รอเข้ารับ',
   PickingUp: 'กำลังเข้ารับ',
   PickedUp: 'เข้ารับสำเร็จ',
+  Rejected: 'ปฏิเสธคำเรียก',    
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -143,13 +144,29 @@ function renderFilteredRequests() {
   tbody.innerHTML = filtered.map(r => {
     let actionBtn = '';
 
-    if (r.RequestStatus === 'RequestedPickup') {
-      actionBtn = `
-        <button 
-          class="bg-primary hover:bg-blue-700 text-white font-medium text-sm px-4 py-1.5 rounded btn-assign"
-          data-id="${r.RequestID}" data-status="${r.RequestStatus}">
-          ยอมรับคำเรียก
-        </button>`;
+if (r.RequestStatus === 'RequestedPickup') {
+  actionBtn = `
+    <div class="flex items-center justify-center space-x-3">
+      <!-- Accept -->
+      <button 
+        class="flex flex-col items-center bg-green-600 hover:bg-green-700 text-white font-medium 
+               text-xs px-3 py-2 rounded-2xl shadow-sm btn-assign"
+        data-id="${r.RequestID}" data-status="${r.RequestStatus}">
+        <span class="text-sm font-semibold">ยอมรับ</span>
+        <span class="text-sm font-semibold">คำเรียก</span>
+      </button>
+
+      <!-- Reject -->
+      <button
+        class="flex flex-col items-center bg-red-600 hover:bg-red-700 text-white font-medium 
+               text-xs px-3 py-2 rounded-2xl shadow-sm btn-reject"
+        data-id="${r.RequestID}">
+        <span class="text-sm font-semibold">ปฏิเสธ</span>
+        <span class="text-sm font-semibold">คำเรียก</span>
+      </button>
+    </div>`;
+
+
     } else if (r.RequestStatus === 'PickingUp') {
       actionBtn = `
         <button
@@ -160,7 +177,7 @@ function renderFilteredRequests() {
     } else if (r.RequestStatus === 'PickedUp') {
     actionBtn = `<span class="text-green-600 font-semibold">ยืนยันการเข้ารับแล้วเรียบร้อย</span>`;
     } else {
-      actionBtn = `<span class="text-gray-500">-</span>`;
+      actionBtn = `<span class="text-red-600 font-semibold">ปฏิเสธการเข้ารับแล้วเรียบร้อย</span>`;
     }
 
     return `
@@ -206,10 +223,40 @@ function renderFilteredRequests() {
         if (idx !== -1) {
             allRequests[idx].RequestStatus = 'PickingUp';
             renderFilteredRequests();
-        }
-        }
+        }}
     });
-});
+  });
+
+  // ✅ ปุ่มปฏิเสธคำเรียก
+  document.querySelectorAll('.btn-reject').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const requestId = btn.dataset.id;
+      const ok = confirm('คุณต้องการปฏิเสธคำเรียกนี้ใช่หรือไม่?');
+      if (!ok) return;
+
+      // Optimistic UI: เปลี่ยนสถานะชั่วคราว
+      const idx = allRequests.findIndex(r => String(r.RequestID) === String(requestId));
+      const prev = idx !== -1 ? allRequests[idx].RequestStatus : null;
+      if (idx !== -1) {
+        allRequests[idx].RequestStatus = 'Rejected';
+        renderFilteredRequests();
+      }
+
+      try {
+        const res = await ApiClient.rejectPickup(requestId);
+        alert('✅ ' + res.message);
+        await loadPickupRequests(); // sync ข้อมูลจริง
+      } catch (err) {
+        alert('❌ ' + (err.message || 'ไม่สามารถปฏิเสธคำเรียกได้'));
+        // rollback ถ้า backend fail
+        if (idx !== -1 && prev) {
+          allRequests[idx].RequestStatus = prev;
+          renderFilteredRequests();
+        }
+      }
+    });
+  });
+ 
 }
 
 function openModal(requestId) {

@@ -91,7 +91,7 @@ function renderActionButtons(order) {
   if (OrderStatus === "Pickup") {
     return `
       <button data-id="${OrderID}" data-status="In Transit"
-        class="text-blue-600 underline hover:text-blue-800 transition action-btn">
+        class="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-4 py-1.5 rounded transition action-btn">
         จัดส่งพัสดุ
       </button>
     `;
@@ -99,15 +99,26 @@ function renderActionButtons(order) {
 
   if (OrderStatus === "In Transit") {
     return `
-      <div class="flex flex-col items-center gap-1">
-        <button data-id="${OrderID}" data-status="Success"
-          class="text-green-600 underline hover:text-green-800 transition action-btn">
-          จัดส่งสำเร็จ
+      <div class="flex items-center justify-center space-x-1">
+      
+        <!-- Delivery Success -->
+        <button 
+          data-id="${OrderID}" data-status="Success"
+          class="flex flex-col items-center bg-green-600 hover:bg-green-700 text-white font-medium
+                text-xs px-2 py-2 min-w-[70px] rounded-2xl shadow-sm action-btn">
+          <span class="text-sm font-semibold">จัดส่ง</span>
+          <span class="text-sm font-semibold">สำเร็จ</span>
         </button>
-        <button data-id="${OrderID}" data-status="Fail"
-          class="text-red-600 underline hover:text-red-800 transition action-btn">
-          จัดส่งล้มเหลว
+
+        <!-- Delivery Failed -->
+        <button 
+          data-id="${OrderID}" data-status="Fail"
+          class="flex flex-col items-center bg-red-600 hover:bg-red-700 text-white font-medium
+                text-xs px-2 py-2 min-w-[70px] rounded-2xl shadow-sm action-btn">
+          <span class="text-sm font-semibold">จัดส่ง</span>
+          <span class="text-sm font-semibold">ล้มเหลว</span>
         </button>
+
       </div>
     `;
   }

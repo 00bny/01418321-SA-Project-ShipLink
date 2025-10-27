@@ -173,7 +173,44 @@ const PickupController = {
     } finally {
       if (conn) conn.release();
     }
-  }
+  },
+
+  async rejectPickup(req, res) {
+    let conn;
+    try {
+      const requestId = Number(req.params.id);
+      if (!requestId) return res.status(400).json({ message: 'Invalid request id' });
+
+      conn = await DB.getConnection();
+      await conn.beginTransaction();
+
+      // 1) เปลี่ยนสถานะคำขอเป็น Rejected
+      const [prRes] = await conn.query(
+        `UPDATE PickupRequest
+            SET RequestStatus = 'Rejected'
+          WHERE RequestID = ?`,
+        [requestId]
+      );
+
+      // 2) ย้อนสถานะ Order ทั้งหมดในคำขอนี้กลับเป็น Paid
+      const [ordRes] = await conn.query(
+        `UPDATE \`Order\`
+            SET OrderStatus = 'Paid'
+          WHERE RequestID = ?`,
+        [requestId]
+      );
+
+      await conn.commit();
+      res.json({ message: 'อัปเดตสถานะเป็น ปฏิเสธคำเรียก' });
+    } catch (error) {
+      if (conn) await conn.rollback();
+      console.error('❌ rejectPickup error:', error);
+      res.status(500).json({ message: 'ไม่สามารถปฏิเสธคำเรียกได้' });
+    } finally {
+      if (conn) conn.release();
+    }
+  },
+
 };
 
 module.exports = PickupController;
