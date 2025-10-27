@@ -142,7 +142,7 @@ VALUES ('RICH Express','0987654324','$2a$10$T1B58WgXY3I6E88/2wdH5u6ghn/YKFGo3iit
 INSERT INTO Customer (CustomerName,CustomerPhone,CustomerAddress)
 VALUES ('Warali Foochareon','0999999999','123 Somewhere In Bangkok 99999');
 
-INSERT INTO `Order` (OrderStatus,OrderDate,ParcelType,Width,Weight,Height,Length,ShipCost,AddOnCost,UpdatedAt,SenderID,ReceiverID,EmployeeID,CompanyID,BranchID)
+INSERT INTO `Order` (TrackingNumber,OrderStatus,OrderDate,ParcelType,Width,Weight,Height,Length,ShipCost,AddOnCost,UpdatedAt,SenderID,ReceiverID,EmployeeID,CompanyID,BranchID)
 VALUES ('TH5396441','Paid',CURRENT_TIMESTAMP,'-',1,1.00,1,1,30.00,0.00,CURRENT_TIMESTAMP,1,1,2,1,1);
 
 INSERT INTO `Order` (TrackingNumber,OrderStatus,OrderDate,ParcelType,Width,Weight,Height,Length,ShipCost,AddOnCost,UpdatedAt,SenderID,ReceiverID,EmployeeID,CompanyID,BranchID)
