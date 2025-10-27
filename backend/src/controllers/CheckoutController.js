@@ -5,6 +5,22 @@ function genTracking(orderId) {
   return `TH${ts}${orderId}`;
 }
 
+function checkEnoughBalance(balance, totalCut) {
+  return Number(balance) >= Number(totalCut);
+}
+
+function calProfit(ship , share) {
+  return +(ship * (share / 100)).toFixed(2);
+}
+
+function calCut(ship , profit, addOn) {
+  return +(ship - profit + addOn).toFixed(2);
+}
+
+function calChargeCustomer(ship, addOn) {
+  return +(ship + addOn).toFixed(2);
+}
+
 class CheckoutController {
   static async paySelected(req, res) {
     try {
@@ -57,18 +73,16 @@ class CheckoutController {
           const ship = Number(o.ShipCost ?? 0);
           const addOn = Number(o.AddOnCost ?? 0);
 
-          const profit = +(ship * (share / 100)).toFixed(2);
-          const cut = +(ship - profit + addOn).toFixed(2); // เงินที่ตัดจากสาขา
+          const profit = calProfit(ship, share);
+          const cut = calCut(ship , profit, addOn)
+          const chargeCustomer = calChargeCustomer(ship, addOn);
           totalCut = +(totalCut + cut).toFixed(2);
 
           updates.push({
-            orderId: o.OrderID,
-            cut,
-            chargeCustomer: +(ship + addOn).toFixed(2)
-          });
+            orderId: o.OrderID,cut,chargeCustomer});
         }
 
-        if (Number(w.Balance) < totalCut) {
+        if (!checkEnoughBalance(w.Balance, totalCut)) {
           throw new Error(`ยอดเงินในกระเป๋าไม่เพียงพอ (ต้องใช้ ${totalCut.toFixed(2)} บาท)`);
         }
 

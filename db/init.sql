@@ -143,13 +143,13 @@ INSERT INTO Customer (CustomerName,CustomerPhone,CustomerAddress)
 VALUES ('Warali Foochareon','0999999999','123 Somewhere In Bangkok 99999');
 
 INSERT INTO `Order` (OrderStatus,OrderDate,ParcelType,Width,Weight,Height,Length,ShipCost,AddOnCost,UpdatedAt,SenderID,ReceiverID,EmployeeID,CompanyID,BranchID)
-VALUES ('Paid',CURRENT_TIMESTAMP,'-',1,1.00,1,1,30.00,0.00,CURRENT_TIMESTAMP,1,1,2,1,1);
+VALUES ('TH5396441','Paid',CURRENT_TIMESTAMP,'-',1,1.00,1,1,30.00,0.00,CURRENT_TIMESTAMP,1,1,2,1,1);
 
 INSERT INTO `Order` (TrackingNumber,OrderStatus,OrderDate,ParcelType,Width,Weight,Height,Length,ShipCost,AddOnCost,UpdatedAt,SenderID,ReceiverID,EmployeeID,CompanyID,BranchID)
-VALUES ('TH42354353','In Transit',CURRENT_TIMESTAMP,'-',1,1.00,1,1,30.00,0.00,CURRENT_TIMESTAMP,1,1,2,3,1);
+VALUES ('TH5396442','In Transit',CURRENT_TIMESTAMP,'-',1,1.00,1,1,30.00,0.00,CURRENT_TIMESTAMP,1,1,2,3,1);
 
 INSERT INTO `Order` (TrackingNumber,OrderStatus,OrderDate,ParcelType,Width,Weight,Height,Length,ShipCost,AddOnCost,UpdatedAt,IsReturnContacted,SenderID,ReceiverID,EmployeeID,CompanyID,BranchID)
-VALUES ('TH34234231','Return',CURRENT_TIMESTAMP,'Document',1,1.00,1,1,30.00,0.00,CURRENT_TIMESTAMP,FALSE,1,1,2,2,1);
+VALUES ('TH5396443','Return',CURRENT_TIMESTAMP,'Document',1,1.00,1,1,30.00,0.00,CURRENT_TIMESTAMP,FALSE,1,1,2,2,1);
 
 INSERT INTO Wallet (Balance) VALUES (1234.00);
 INSERT INTO Branch (BranchName, BranchAddress, WalletID)

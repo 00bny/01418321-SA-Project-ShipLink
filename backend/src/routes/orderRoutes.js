@@ -18,4 +18,6 @@ router.put('/status/:id', OrderController.updateStatus);
 
 router.post('/:id/deliver-success', OrderController.deliverSuccess);
 
+router.post('/quotes', OrderController.calculateQuote);
+
 module.exports = router;

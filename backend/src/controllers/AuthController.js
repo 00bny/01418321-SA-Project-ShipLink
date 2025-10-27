@@ -2,12 +2,49 @@ const bcrypt = require('bcryptjs');
 const EmployeeController = require('./EmployeeController');
 const CompanyController = require('./CompanyController');
 
+function checkNull(value) {
+  if (value === undefined || value === null)
+    return false;
+  if (typeof value === 'string' && value.trim() === '')
+    return false;
+  return true;
+}
+
+function checkLength(value, min, max) {
+  if (typeof value !== 'string')
+    return false;
+  const len = value.trim().length;
+  if (len < min || len > max)
+    return false;
+  return true;
+}
+
+function checkPhoneFormat(phone) {
+  if (typeof phone !== 'string')
+    return false;
+  return /^[0-9]+$/.test(phone.trim());
+}
+
+function checkConfirmPassword(password, confirmPassword) {
+  return password == confirmPassword;
+}
+
 class AuthController {
   static async registerEmployee(req, res) {
     try {
-      const { name, phone, password, position = 'Staff', branchId } = req.body;
-      if (!name || !phone || !password || !branchId) {
-        return res.status(400).json({ message: 'name/phone/password/branchId required' });
+      const { name, phone, password, position = 'Staff', branchId, confirmPassword } = req.body;
+      
+      if (!checkNull(phone)) {
+        return res.status(400).json({ message: 'กรุณากรอกเบอร์โทรศัพท์' });
+      }
+      if (!checkPhoneFormat(phone)) {
+        return res.status(400).json({ message: 'เบอร์โทรศัพท์ต้องเป็นตัวเลขเท่านั้น' });
+      }
+      if (!checkConfirmPassword(password, confirmPassword)) {
+        return res.status(400).json({ message: 'รหัสผ่านไม่ตรงกัน' });
+      }
+      if (!checkLength(name, 1, 60)) {
+        return res.status(400).json({ message: 'ชื่อต้องมีความยาวระหว่าง 1–60 ตัวอักษร' });
       }
 
       const exists = await EmployeeController.getByPhone(phone);

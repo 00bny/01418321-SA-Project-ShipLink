@@ -39,7 +39,7 @@ class AddStaffUI {
     if (pass !== conf) return Popup.error('รหัสผ่านไม่ตรงกัน');
 
     try {
-      const res = await ApiClient.registerEmployee({ name, phone, password: pass, branchId: this.branchId });
+      const res = await ApiClient.registerEmployee({ name, phone, password: pass, branchId: this.branchId, confirmPassword: conf });
       if (res?.EmployeeID){
         Popup.info(`เพิ่มพนักงาน ${res.EmployeeName} สำเร็จแล้ว!`);
         document.getElementById('name').value = '';

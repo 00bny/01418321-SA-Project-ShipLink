@@ -1,33 +1,38 @@
 const DB = require('../config/DBConnector');
 const Customer = require('../models/Customer');
 
+function checkNull(value) {
+  if (value === undefined || value === null)
+    return false;
+  if (typeof value === 'string' && value.trim() === '')
+    return false;
+  return true;
+}
+
+function checkLength(value, min, max) {
+  if (typeof value !== 'string')
+    return false;
+  const len = value.trim().length;
+  if (len < min || len > max)
+    return false;
+  return true;
+}
+
+function checkPhoneFormat(phone) {
+  if (typeof phone !== 'string')
+    return false;
+  return /^[0-9]+$/.test(phone.trim());
+}
+
 class CustomerController {
-  static checkNull(value) {
-    if (value === undefined || value === null) return false;
-    if (typeof value === 'string' && value.trim() === '') return false;
-    return true;
-  }
-
-  static checkLength(value, min, max) {
-    if (typeof value !== 'string') return false;
-    const len = value.trim().length;
-    if (len < min || len > max) return false;
-    return true;
-  }
-
-  static checkPhoneFormat(phone) {
-    if (typeof phone !== 'string') return false;
-    return /^[0-9]+$/.test(phone.trim());
-  }
-
   static async searchByPhone(req, res) {
     try {
       const phone = (req.query.phone || '').trim();
 
-      if (!CustomerController.checkNull(phone)) {
+      if (!checkNull(phone)) {
         return res.status(400).json({ message: 'กรุณากรอกเบอร์โทรศัพท์' });
       }
-      if (!CustomerController.checkPhoneFormat(phone)) {
+      if (!checkPhoneFormat(phone)) {
         return res.status(400).json({ message: 'เบอร์โทรศัพท์ต้องเป็นตัวเลขเท่านั้น' });
       }
 
@@ -48,17 +53,17 @@ class CustomerController {
     try {
       const { name, phone, address } = req.body;
 
-      if (!CustomerController.checkNull(name) || !CustomerController.checkNull(phone) || !CustomerController.checkNull(address)) {
+      if (!checkNull(name) || !checkNull(phone) || !checkNull(address)) {
         return res.status(400).json({ message: 'กรุณากรอกข้อมูลให้ครบทุกช่อง' });
       }
-      if (!CustomerController.checkPhoneFormat(phone)) {
+      if (!checkPhoneFormat(phone)) {
         return res.status(400).json({ message: 'เบอร์โทรศัพท์ต้องเป็นตัวเลขเท่านั้น' });
       }
-      if (!CustomerController.checkLength(name, 1, 150)) {
-        return res.status(400).json({ message: 'ชื่อต้องมีความยาวระหว่าง 1–150 ตัวอักษร' });
+      if (!checkLength(name, 1, 60)) {
+        return res.status(400).json({ message: 'ชื่อต้องมีความยาวระหว่าง 1–60 ตัวอักษร' });
       }
-      if (!CustomerController.checkLength(address, 1, 250)) {
-        return res.status(400).json({ message: 'ที่อยู่ต้องมีความยาวระหว่าง 1–250 ตัวอักษร' });
+      if (!checkLength(address, 1, 150)) {
+        return res.status(400).json({ message: 'ที่อยู่ต้องมีความยาวระหว่าง 1–150 ตัวอักษร' });
       }
 
       const result = await DB.query(
@@ -80,16 +85,16 @@ class CustomerController {
       const phone = req.params.phone?.trim();
       const { name, address } = req.body;
 
-      if (!CustomerController.checkNull(phone) || !CustomerController.checkPhoneFormat(phone)) {
+      if (!checkNull(phone) || !checkPhoneFormat(phone)) {
         return res.status(400).json({ message: 'เบอร์โทรศัพท์ไม่ถูกต้อง' });
       }
-      if (!CustomerController.checkNull(name) || !CustomerController.checkNull(address)) {
+      if (!checkNull(name) || !checkNull(address)) {
         return res.status(400).json({ message: 'กรุณากรอกข้อมูลให้ครบ' });
       }
-      if (!CustomerController.checkLength(name, 1, 150)) {
+      if (!checkLength(name, 1, 150)) {
         return res.status(400).json({ message: 'ชื่อต้องมีความยาวระหว่าง 1–150 ตัวอักษร' });
       }
-      if (!CustomerController.checkLength(address, 1, 250)) {
+      if (!checkLength(address, 1, 250)) {
         return res.status(400).json({ message: 'ที่อยู่ต้องมีความยาวระหว่าง 1–250 ตัวอักษร' });
       }
       await DB.query(
