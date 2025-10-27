@@ -58,10 +58,6 @@ class AddStaffUI {
   logout(){
     const ok = confirm('คุณต้องการออกจากระบบหรือไม่?');
     if (!ok) return;
-    // ล้างข้อมูล session/localStorage ถ้ามี
-    // localStorage.clear();
-    // sessionStorage.clear();
-    // กลับไปหน้า login
     window.location.href = '../pages/login.html';
   }
 }
