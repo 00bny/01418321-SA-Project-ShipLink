@@ -34,8 +34,8 @@ class AuthController {
     try {
       const { name, phone, password, position = 'Staff', branchId, confirmPassword } = req.body;
       
-      if (!checkNull(phone)) {
-        return res.status(400).json({ message: 'กรุณากรอกเบอร์โทรศัพท์' });
+      if (!checkNull(name) || !checkNull(phone) || !checkNull(password) || !checkNull(confirmPassword)) {
+        return res.status(400).json({ message: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
       }
       if (!checkPhoneFormat(phone)) {
         return res.status(400).json({ message: 'เบอร์โทรศัพท์ต้องเป็นตัวเลขเท่านั้น' });
@@ -100,8 +100,12 @@ class AuthController {
   static async login(req, res) {
     try {
       const { role, phone, password } = req.body;
-      if (!role || !phone || !password) {
-        return res.status(400).json({ message: 'role/phone/password required' });
+      if (!checkNull(phone) || !checkNull(password)) {
+        return res.status(400).json({ message: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
+      }
+
+      if (!checkPhoneFormat(phone)) {
+        return res.status(400).json({ message: 'เบอร์โทรศัพท์ต้องเป็นตัวเลขเท่านั้น' });
       }
 
       if (role === 'employee') {
