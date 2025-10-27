@@ -292,6 +292,7 @@ class CreateOrderUI {
       senderId: this.sender.CustomerID,
       receiverId: this.receiver.CustomerID,
       employeeId: this.employeeId,
+      branchId: this.branchId,
       companyId: this.selectedQuote.companyId,
       parcelType: $('#parcelType').value || 'อื่นๆ',
       width: size.width, height: size.height, length: size.length, weight: size.weight,

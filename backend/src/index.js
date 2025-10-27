@@ -39,7 +39,6 @@ app.get('/api/ping', (_req, res) => res.json({ ok: true }));
 app.use('/api/customers', require('./routes/customerRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
 app.use('/api/checkout', require('./routes/checkoutRoutes'));
-app.use('/api/quotes', require('./routes/quoteRoutes'));
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/branch-wallet', require('./routes/branchWalletRoutes'));
 app.use('/api/pickup', require('./routes/pickupRoutes'));

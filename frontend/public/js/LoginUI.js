@@ -6,7 +6,6 @@ class LoginUI {
     const btn = document.querySelector('#btnLogin');
     btn.onclick = () => this.login();
 
-    // กด Enter แล้ว login
     ['role','phone','password'].forEach(id=>{
       const el = document.querySelector('#'+id);
       el.addEventListener('keydown', (e)=>{

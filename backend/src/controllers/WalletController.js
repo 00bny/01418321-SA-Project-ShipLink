@@ -24,6 +24,8 @@ const WalletController = {
   async withdraw(req, res) {
     try {
       const { companyId, amount } = req.body;
+
+      
       if (!amount || amount <= 0)
         return res.status(400).json({ message: 'จำนวนเงินไม่ถูกต้อง' });
 

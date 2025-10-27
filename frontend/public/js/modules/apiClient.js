@@ -1,5 +1,5 @@
 // frontend/js/modules/apiClient.js
-const API = 'http://localhost:5002';
+const API = 'http://localhost:5000';
 
 async function j(res){
   const txt = await res.text();
@@ -37,7 +37,7 @@ export const ApiClient = {
   },
 
   async getQuotes(payload){
-    const r = await fetch(`${API}/api/quotes`,{
+    const r = await fetch(`${API}/api/orders/quotes`,{
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify(payload)
     });
@@ -89,10 +89,10 @@ export const ApiClient = {
   },
 
   // --- auth ---
-  async registerEmployee({ name, phone, password, position, branchId }) {
+  async registerEmployee({ name, phone, password, position, branchId, confirmPassword }) {
     const r = await fetch(`${API}/api/auth/register/employee`, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ name, phone, password, position, branchId })
+      body: JSON.stringify({ name, phone, password, position, branchId, confirmPassword })
     });
     return j(r);
   },
