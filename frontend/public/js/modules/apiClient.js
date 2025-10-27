@@ -188,6 +188,18 @@ export const ApiClient = {
     return j(res);
   },
 
+    // ✅ ปฏิเสธคำเรียก
+  async rejectPickup(requestId) {
+    const res = await fetch(`${API}/api/pickup/reject/${encodeURIComponent(requestId)}`, {
+      method: 'PUT'
+    });
+    if (!res.ok) {
+      const t = await res.text().catch(()=> '');
+      throw new Error(t || 'Failed to reject pickup');
+    }
+    return await res.json();
+  },
+
       // --- staff dashboard ---
   async getStaffDashboard(branchId){
     const r = await fetch(`${API}/api/dashboard/staff?branchId=${encodeURIComponent(branchId)}`);
