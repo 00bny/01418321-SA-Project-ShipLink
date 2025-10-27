@@ -74,7 +74,7 @@ class CheckoutController {
           const addOn = Number(o.AddOnCost ?? 0);
 
           const profit = calProfit(ship, share);
-          const cut = calCut(ship , profit, addOn)
+          const cut = calCut(ship , profit, addOn);
           const chargeCustomer = calChargeCustomer(ship, addOn);
           totalCut = +(totalCut + cut).toFixed(2);
 

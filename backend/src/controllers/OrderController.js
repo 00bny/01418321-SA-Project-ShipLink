@@ -150,12 +150,6 @@ class OrderController {
       const orderId = Number(req.params.id);
       const payload = req.body;
 
-      const [[cur]] = await conn.query('SELECT * FROM `Order` WHERE OrderID=?', [orderId]);
-      if (!cur)
-        throw new Error('Order not found');
-      if (cur.OrderStatus !== 'Pending')
-        throw new Error('Cannot edit non-pending order');
-
       if (!checkParcelDims({ width, length, height, weight })) {
         await conn.rollback();
         return res.status(400).json({ message: 'ขนาด/น้ำหนักพัสดุไม่ผ่านเกณฑ์' });
@@ -217,12 +211,6 @@ class OrderController {
   static async removePending(req, res) {
     try {
       const orderId = Number(req.params.id);
-      const [[cur]] = await DB.query('SELECT * FROM `Order` WHERE OrderID=?', [orderId]);
-      if (!cur)
-        throw new Error('Order not found');
-      if (cur.OrderStatus !== 'Pending')
-        throw new Error('Cannot delete non-pending order');
-
       await DB.query('DELETE FROM `Order` WHERE OrderID=?', [orderId]);
       res.json({ message: 'deleted', deleted: true });
     } catch (e) {

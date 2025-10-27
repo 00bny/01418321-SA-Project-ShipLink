@@ -123,8 +123,8 @@ class CustomerController {
         return res.status(400).json({ message: 'รหัสลูกค้าไม่ถูกต้อง' });
       }
 
-      const customer = await this.findCustomerById(id);
-      if (!customer) {
+      const customer = await DB.query('SELECT * FROM Customer WHERE CustomerID = ?', [id]);
+      if (!customer.length) {
         return res.status(404).json({ message: 'ไม่พบบัญชีลูกค้า' });
       }
 
