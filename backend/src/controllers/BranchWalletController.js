@@ -1,6 +1,25 @@
 const DB = require('../config/DBConnector');
 const Wallet = require('../models/Wallet');
 
+function checkEnoughBalance(balance, withdraw) {
+  return Number(balance) >= Number(withdraw);
+}
+
+function checkNull(value) {
+  if (value === undefined || value === null)
+    return false;
+  if (typeof value === 'string' && value.trim() === '')
+    return false;
+  return true;
+}
+
+function checkPositiveDec(n) {
+  const v = Number(n);
+  if (!Number.isFinite(v))
+    return false;
+  return v > 0;
+}
+
 class BranchWalletController {
   static async _getWalletByBranchId(branchId) {
     const rows = await DB.query(
@@ -15,9 +34,11 @@ class BranchWalletController {
 
   static async getBalance(req, res) {
     try {
-      const branchId = Number(req.query.branchId || req.params.branchId || 1);
+      const branchId = Number(req.query.branchId || req.params.branchId);
+
       const w = await BranchWalletController._getWalletByBranchId(branchId);
       if (!w) throw new Error('Branch/Wallet not found');
+
       res.json({ branchId, walletId: w.WalletID, balance: w.Balance });
     } catch (err) {
       console.error('❌ getBalance error:', err);
@@ -29,12 +50,15 @@ class BranchWalletController {
     let conn;
     try {
       const { branchId, amount, employeeId } = req.body;
-      const branchIdNum = Number(branchId || 1);
+      const branchIdNum = Number(branchId);
       const amt = Number(amount);
-      const empId = Number(employeeId || 1);
+      const empId = Number(employeeId);
 
-      if (!Number.isFinite(amt) || amt <= 0) {
-        return res.status(400).json({ message: 'Invalid amount' });
+      if (!checkNull(amt)) {
+        return res.status(400).json({ message: 'กรุณาระบุจำนวนเงิน' });
+      }
+      if (!checkPositiveDec(amt)) {
+        return res.status(400).json({ message: 'จำนวนเงินต้องมีค่ามากกว่า 0' });
       }
 
       const w = await BranchWalletController._getWalletByBranchId(branchIdNum);
@@ -79,19 +103,22 @@ class BranchWalletController {
     let conn;
     try {
       const { branchId, amount, employeeId } = req.body;
-      const branchIdNum = Number(branchId || 1);
+      const branchIdNum = Number(branchId);
       const amt = Number(amount);
-      const empId = Number(employeeId || 1);
+      const empId = Number(employeeId);
 
-      if (!Number.isFinite(amt) || amt <= 0) {
-        return res.status(400).json({ message: 'Invalid amount' });
+      if (!checkNull(amt)) {
+        return res.status(400).json({ message: 'กรุณาระบุจำนวนเงิน' });
+      }
+      if (!checkPositiveDec(amt)) {
+        return res.status(400).json({ message: 'จำนวนเงินต้องมีค่ามากกว่า 0' });
       }
 
       const w = await BranchWalletController._getWalletByBranchId(branchIdNum);
       if (!w) throw new Error('Branch/Wallet not found');
 
-      if (w.Balance < amt) {
-        throw new Error('ยอดเงินไม่เพียงพอในกระเป๋า');
+      if (!checkEnoughBalance(w.Balance, amt)) {
+        return res.status(400).json({ message: 'ยอดเงินไม่เพียงพอในกระเป๋า' });
       }
 
       conn = await DB.getConnection();

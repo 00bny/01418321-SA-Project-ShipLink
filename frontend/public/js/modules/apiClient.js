@@ -1,5 +1,5 @@
 // frontend/js/modules/apiClient.js
-const API = 'http://localhost:5002';
+const API = 'http://localhost:5000';
 
 async function j(res){
   const txt = await res.text();
