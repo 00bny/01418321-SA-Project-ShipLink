@@ -167,6 +167,7 @@ function renderFilteredRequests() {
       <tr class="border-b">
         <td class="py-2 border">${r.RequestID}</td>
         <td class="py-2 border">${formatDateTimeLocal(r.CreatedDate)}</td>
+        <td class="py-2 border">${r.BranchName || '-'}</td>
         <td class="py-2 border">${r.ParcelCount ?? 0}</td>
         <td class="py-2 border text-center">${statusMap[r.RequestStatus] || '-'}</td>
         <td class="py-2 border">${actionBtn}</td>

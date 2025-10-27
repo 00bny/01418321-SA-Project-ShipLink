@@ -92,16 +92,18 @@ const PickupController = {
 
       const rows = await DB.query(
         `SELECT 
-           pr.RequestID,
-           pr.CreatedDate,
-           pr.RequestStatus,
-           (
-             SELECT COUNT(*) 
-               FROM \`Order\` o 
+          pr.RequestID,
+          pr.CreatedDate,
+          pr.RequestStatus,
+          (
+            SELECT COUNT(*) 
+              FROM \`Order\` o 
               WHERE o.CompanyID = pr.CompanyID 
                 AND o.RequestID = pr.RequestID
-           ) AS ParcelCount
-         FROM PickupRequest pr
+          ) AS ParcelCount,
+          b.BranchName AS BranchName
+        FROM PickupRequest pr
+        LEFT JOIN Branch b ON pr.BranchID = b.BranchID
         WHERE pr.CompanyID = ?
         ORDER BY pr.CreatedDate DESC`,
         [companyId]
