@@ -123,11 +123,12 @@ class CustomerController {
         return res.status(400).json({ message: 'รหัสลูกค้าไม่ถูกต้อง' });
       }
 
-      const customer = await DB.query('SELECT * FROM Customer WHERE CustomerID = ?', [id]);
-      if (!customer.length) {
+      const rows = await DB.query('SELECT * FROM Customer WHERE CustomerID = ?', [id]);
+      if (!rows.length) {
         return res.status(404).json({ message: 'ไม่พบบัญชีลูกค้า' });
       }
-
+      const customer = new Customer(rows[0]);
+      
       res.json(customer);
     } catch (err) {
       console.error('❌ getById error:', err);

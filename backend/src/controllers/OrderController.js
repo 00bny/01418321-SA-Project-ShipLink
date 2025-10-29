@@ -200,7 +200,8 @@ class OrderController {
 
   static async getOne(req, res) {
     try {
-      const [[row]] = await DB.query('SELECT * FROM `Order` WHERE OrderID=?', [req.params.id]);
+      const rows = await DB.query('SELECT * FROM `Order` WHERE OrderID=?', [req.params.id]);
+      const row = rows[0];
       if (!row) return res.status(404).json({ message: 'not found' });
       res.json(row);
     } catch (e) {
