@@ -9,6 +9,11 @@ services:
       MYSQL_DATABASE: shiplink_db
       MYSQL_USER: shiplink
       MYSQL_PASSWORD: shiplink_pw
+    command: [
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_unicode_ci",
+      "--skip-character-set-client-handshake"
+    ]
     volumes:
       - mysql_data:/var/lib/mysql
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro

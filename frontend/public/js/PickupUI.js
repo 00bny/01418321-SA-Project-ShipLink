@@ -14,6 +14,7 @@ const statusMap = {
   RequestedPickup: 'รอเข้ารับ',
   PickingUp: 'กำลังเข้ารับ',
   PickedUp: 'เข้ารับสำเร็จ',
+  Rejected: 'ปฏิเสธการเข้ารับ'
 };
 
 // ------------------------------

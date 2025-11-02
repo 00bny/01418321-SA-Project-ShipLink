@@ -115,13 +115,13 @@ class CompanyDashboardController {
         LEFT JOIN (
             SELECT BranchID, COUNT(*) AS PickupCount
             FROM PickupRequest
-            WHERE CompanyID = ?
+            WHERE CompanyID = ? AND RequestStatus NOT IN ('Rejected')
             GROUP BY BranchID
         ) p ON p.BranchID = B.BranchID
         LEFT JOIN (
             SELECT BranchID, COUNT(*) AS ParcelCount
             FROM \`Order\`
-            WHERE CompanyID = ?
+            WHERE CompanyID = ? AND RequestID IS NOT NULL
             GROUP BY BranchID
         ) o ON o.BranchID = B.BranchID
         WHERE IFNULL(p.PickupCount,0) > 0 AND IFNULL(o.ParcelCount,0) > 0
