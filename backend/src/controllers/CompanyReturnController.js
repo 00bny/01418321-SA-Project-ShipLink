@@ -16,8 +16,12 @@ class CompanyReturnController {
            o.ReturnCount
          FROM \`Order\` o
          JOIN Customer c ON o.ReceiverID = c.CustomerID
-         WHERE o.CompanyID = ?
-           AND (o.OrderStatus = 'Fail' OR o.OrderStatus = 'Return') OR o.ReturnCount > 0
+         WHERE 
+            o.CompanyID = ?
+            AND (
+                o.OrderStatus IN ('Fail', 'Return')
+                OR o.ReturnCount > 0
+            )
          ORDER BY o.OrderID ASC`,
         [companyId]
       );
