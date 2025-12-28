@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShipLink • Login</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body{font-family:'Prompt',sans-serif}
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 flex items-center justify-center">
+  <div class="w-full max-w-md bg-white shadow-xl rounded-2xl p-8">
+    <h1 class="text-3xl font-extrabold text-center mb-6">Login</h1>
+
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Role</label>
+        <select id="role" class="w-full bg-slate-50 border-slate-200 rounded-lg">
+          <option value="employee">พนักงาน</option>
+          <option value="company">บริษัทขนส่ง</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Phone Number</label>
+        <input id="phone" class="w-full bg-slate-50 border-slate-200 rounded-lg" placeholder="เช่น 0901234567" inputmode="numeric" pattern="\d*">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Password</label>
+        <input id="password" type="password" class="w-full bg-slate-50 border-slate-200 rounded-lg" placeholder="กรอกรหัสผ่าน">
+      </div>
+
+      <button id="btnLogin" class="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg">
+        Login
+      </button>
+    </div>
+  </div>
+
+  <script type="module" src="../js/LoginUI.js"></script>
+</body>
+</html>

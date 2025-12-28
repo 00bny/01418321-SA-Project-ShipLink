@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ShipLink • Company Transactions</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+
+  <style>
+    body{font-family:'Prompt',sans-serif;min-height:max(884px,100dvh)}
+  </style>
+</head>
+
+<body class="bg-background-light text-gray-900 font-display">
+<div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-sidebar-light border-r border-border-light">
+    <div class="p-6"><h1 class="text-2xl font-extrabold">ShipLink</h1></div>
+    <nav class="mt-4">
+      <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100"
+         href="./company-dashboard.html"><span class="material-icons">dashboard</span><span class="ml-3">Dashboard</span></a>
+      <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100"
+         href="./company-pickup.html"><span class="material-icons">local_shipping</span><span class="ml-3">Pickup Management</span></a>
+      <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100"
+         href="./company-delivery.html"><span class="material-icons">assignment_turned_in</span><span class="ml-3">Delivery Confirmation</span></a>
+      <a class="flex items-center px-6 py-3 text-slate-700 hover:bg-slate-100"
+         href="./company-return.html"><span class="material-icons">undo</span><span class="ml-3">Return Parcels</span></a>
+    </nav>
+
+    <div class="w-64 px-6">
+      <button id="btnLogout"
+              class="w-full flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 rounded-lg py-2 font-semibold">
+        <span class="material-icons mr-2">logout</span>Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Content -->
+  <div class="flex-1 flex flex-col">
+    <header class="flex items-center justify-between p-4 bg-white border-b border-border-light">
+      <h2 class="text-2xl font-bold">ประวัติธุรกรรม</h2>
+      <!-- Wallet dropdown -->
+      <div class="relative">
+        <button id="walletBtn" class="flex items-center bg-green-100 text-green-700 px-4 py-2 rounded-lg">
+          <span id="walletBalance">฿0.00</span>
+          <span class="material-icons ml-1">arrow_drop_down</span>
+        </button>
+        <div id="walletMenu" class="hidden absolute right-0 mt-2 w-56 bg-white shadow-lg rounded-lg border overflow-hidden z-20">
+          <a id="actWithdraw" class="block px-4 py-2 hover:bg-slate-100 cursor-pointer">ถอนเงิน</a>
+          <a id="actHist" class="block px-4 py-2 hover:bg-slate-100 cursor-pointer">ประวัติธุรกรรม</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="p-6 flex-1">
+      <div class="bg-white rounded-xl shadow p-6">
+
+        <!-- ✅ Search + Filter Bar -->
+        <div class="flex items-center gap-4 mb-4">
+          <input id="searchInput"
+                 placeholder="ค้นหาด้วยรหัสธุรกรรม..."
+                 class="flex-1 border border-gray-300 rounded-md px-4 py-2">
+
+          <select id="typeFilter"
+                  class="border border-gray-300 rounded-md px-3 py-2">
+            <option value="">ประเภททั้งหมด</option>
+            <option value="รับเงินค่าขนส่ง">รับเงินค่าขนส่ง</option>
+            <option value="ถอนเงิน">ถอนเงิน</option>
+          </select>
+        </div>
+
+        <table class="w-full text-left text-sm text-center">
+          <thead class="text-gray-600 border-b border-gray-200">
+            <tr>
+              <th class="py-2 w-[15%]">รหัสธุรกรรม</th>
+              <th class="py-2 w-[25%]">จำนวนเงิน</th>
+              <th class="py-2 w-[25%]">ประเภท</th>
+              <th class="py-2 w-[35%]">วันและเวลา</th>
+            </tr>
+          </thead>
+          <tbody id="txnRows"></tbody>
+        </table>
+
+        <div id="noData"
+            class="text-center text-gray-500 mt-6 hidden">
+          ไม่มีข้อมูลธุรกรรม
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script type="module" src="../js/CompanyTransactionsUI.js"></script>
+</body>
+</html>

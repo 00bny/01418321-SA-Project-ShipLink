@@ -1,0 +1,252 @@
+import { ApiClient } from "./modules/apiClient.js";
+import { initCompanyWalletDropdown, loadCompanyWalletBalance } from "./companyWalletUI.js";
+
+function getQuery(name){ return new URLSearchParams(window.location.search).get(name); }
+const COMPANY_ID = Number(getQuery("companyId") || 1);
+
+let tbody;
+let allOrders = [];
+let currentFilter = "all";
+let currentFailOrderId = null;
+
+const statusMap = { 
+  // เข้ารับพัสดุแล้ว อยู่ระหว่างจัดส่ง จัดส่งเสร็จสิ้น จัดส่งไม่สำเร็จ ตีกลับ
+  Pickup: "เข้ารับพัสดุแล้ว",
+  "In Transit": "อยู่ระหว่างจัดส่ง",
+  Success: "จัดส่งสำเร็จ",
+  Fail: "จัดส่งไม่สำเร็จ",
+  Return: "ตีกลับแล้ว"
+};
+
+document.addEventListener("DOMContentLoaded", async () => {
+  patchSidebarLinks();
+
+  tbody = document.getElementById("delivery-body");
+
+  await loadPickupOrders();
+  setupFilters();
+  setupSearch();
+  setupFailModal();
+
+  initCompanyWalletDropdown();
+  await loadCompanyWalletBalance();
+  
+  document.getElementById('btnLogout')?.addEventListener('click', logout);
+});
+
+// ✅ โหลดข้อมูลทั้งหมด
+async function loadPickupOrders() {
+  tbody.innerHTML = `<tr><td colspan="7" class="py-4 text-gray-400 text-center">กำลังโหลด...</td></tr>`;
+
+  try {
+    allOrders = await ApiClient.getCompanyPickedOrders(COMPANY_ID);
+    renderOrders();
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = `<tr><td colspan="7" class="py-4 text-red-500 text-center">โหลดข้อมูลล้มเหลว</td></tr>`;
+  }
+}
+
+// ✅ แสดงข้อมูล + filter + search
+function renderOrders() {
+  let list = [...allOrders];
+
+  if (currentFilter !== "all") {
+    list = list.filter(o => o.OrderStatus === currentFilter);
+  }
+
+  const keyword = document.getElementById("deliverySearchInput").value.trim().toLowerCase();
+  if (keyword) {
+    list = list.filter(o =>
+      String(o.OrderID).includes(keyword) ||
+      o.ReceiverName.toLowerCase().includes(keyword) ||
+      o.ReceiverAddress.toLowerCase().includes(keyword) ||
+      o.ReceiverPhone.includes(keyword)
+    );
+  }
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="py-4 text-gray-400 text-center">ไม่มีข้อมูล</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(o => `
+    <tr class="border-b">
+        <td class="py-2 border text-center">${o.OrderID}</td>
+        <td class="py-2 border">${o.ReceiverName}</td>
+        <td class="py-2 border">${o.ReceiverAddress}</td>
+        <td class="py-2 border text-center">${o.ReceiverPhone}</td>
+        <td class="py-2 border text-center">${statusMap[o.OrderStatus] || o.OrderStatus}</td>
+        <td class="py-2 border text-center">${renderActionButtons(o)}</td>
+    </tr>
+  `).join("");
+
+  attachButtonEvents();
+}
+
+// ✅ แสดงปุ่มการทำงานตามสถานะ
+function renderActionButtons(order) {
+  const { OrderID, OrderStatus } = order;
+
+  if (OrderStatus === "Pickup") {
+    return `
+      <button data-id="${OrderID}" data-status="In Transit"
+        class="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-4 py-1.5 rounded transition action-btn">
+        จัดส่งพัสดุ
+      </button>
+    `;
+  }
+
+  if (OrderStatus === "In Transit") {
+    return `
+      <div class="flex items-center justify-center space-x-1">
+      
+        <!-- Delivery Success -->
+        <button 
+          data-id="${OrderID}" data-status="Success"
+          class="flex flex-col items-center bg-green-600 hover:bg-green-700 text-white font-medium
+                text-xs px-2 py-2 min-w-[70px] rounded-2xl shadow-sm action-btn">
+          <span class="text-sm font-semibold">จัดส่ง</span>
+          <span class="text-sm font-semibold">สำเร็จ</span>
+        </button>
+
+        <!-- Delivery Failed -->
+        <button 
+          data-id="${OrderID}" data-status="Fail"
+          class="flex flex-col items-center bg-red-600 hover:bg-red-700 text-white font-medium
+                text-xs px-2 py-2 min-w-[70px] rounded-2xl shadow-sm action-btn">
+          <span class="text-sm font-semibold">จัดส่ง</span>
+          <span class="text-sm font-semibold">ล้มเหลว</span>
+        </button>
+
+      </div>
+    `;
+  }
+
+  if (OrderStatus === "Fail")
+    return `<span class="text-red-600 font-medium">การจัดส่งล้มเหลว</span>`;
+
+  if (OrderStatus === "Success")
+    return `<span class="text-green-600 font-medium">จัดส่งสำเร็จแล้ว</span>`;
+
+  return `<span class="text-gray-500">-</span>`;
+}
+
+// ✅ Event ปุ่ม
+function attachButtonEvents() {
+  document.querySelectorAll(".action-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      const status = btn.dataset.status;
+
+      if (status === "Fail") {
+        currentFailOrderId = id;
+        document.getElementById("failReasonModal").classList.remove("hidden");
+        return;
+      }
+
+      // ✅ ประกาศก่อนใช้งาน
+      const confirmText = {
+        "In Transit": "คุณต้องการเริ่มจัดส่งพัสดุใช่ไหม?",
+        "Success": "ยืนยันว่าจัดส่งพัสดุสำเร็จแล้วใช่ไหม?"
+      }[status] || "ยืนยันดำเนินการใช่ไหม?";
+
+      if (!confirm(confirmText)) return;
+
+      try {
+        if (status === "Success") {
+          // ✅ กรณีจัดส่งสำเร็จ: ใช้เส้นทางเฉพาะเพื่ออัปเดต Wallet + TransactionHist
+          await ApiClient.deliverSuccess(id);
+          await loadPickupOrders();
+          await loadCompanyWalletBalance(); // อัปเดตยอดใน dropdown
+        } else {
+          // ✅ สถานะอื่นยังคงใช้ updateOrderStatus เดิม
+          await ApiClient.updateOrderStatus(id, { status });
+          await loadPickupOrders();
+        }
+      } catch (err) {
+        console.error(err);
+        alert("เกิดข้อผิดพลาดในการอัปเดตสถานะ ❌");
+      }
+    });
+  });
+}
+
+// ✅ Modal - กรณีล้มเหลว
+function setupFailModal() {
+  const modal = document.getElementById("failReasonModal");
+  const reasonInput = document.getElementById("failReasonInput");
+
+  document.getElementById("failCancelBtn").addEventListener("click", () => {
+    modal.classList.add("hidden");
+    reasonInput.value = "";
+    currentFailOrderId = null;
+  });
+
+  document.getElementById("failSubmitBtn").addEventListener("click", async () => {
+    const reason = reasonInput.value.trim();
+    if (!reason) return alert("กรุณากรอกสาเหตุ");
+
+    try {
+      await ApiClient.updateOrderStatus(currentFailOrderId, {
+        status: "Fail",
+        failReason: reason
+      });
+
+      modal.classList.add("hidden");
+      reasonInput.value = "";
+      currentFailOrderId = null;
+      loadPickupOrders();
+
+    } catch (err) {
+      console.error(err);
+      alert("บันทึกไม่สำเร็จ ❌");
+    }
+  });
+}
+
+// ✅ Filter Dropdown
+function setupFilters() {
+  const btn = document.getElementById("deliveryStatusDropdownBtn");
+  const menu = document.getElementById("deliveryStatusMenu");
+  const label = document.getElementById("deliveryStatusLabel");
+
+  btn.addEventListener("click", () => menu.classList.toggle("hidden"));
+
+  menu.querySelectorAll("a").forEach(item => {
+    item.addEventListener("click", () => {
+      currentFilter = item.dataset.status;
+      label.textContent = item.textContent;
+      menu.classList.add("hidden");
+      renderOrders();
+    });
+  });
+}
+
+// ✅ Search
+function setupSearch() {
+  document.getElementById("deliverySearchInput")
+    .addEventListener("input", renderOrders);
+}
+
+function logout(){
+  if (!confirm('ออกจากระบบ?')) return;
+  window.location.href = '../pages/login.html';
+}
+
+function patchSidebarLinks(){
+  const addParams = (sel, file) => {
+    const a = document.querySelector(sel);
+    if (!a) return;
+    const url = new URL(`../pages/${file}`, window.location.href);
+    url.searchParams.set("companyId", String(COMPANY_ID));
+    a.href = url.toString();
+  };
+
+  addParams('a[href$="company-dashboard.html"]', 'company-dashboard.html');
+  addParams('a[href$="company-delivery.html"]', 'company-delivery.html');
+  addParams('a[href$="company-pickup.html"]', 'company-pickup.html');
+  addParams('a[href$="company-return.html"]', 'company-return.html');
+  addParams('a[href$="company-transactions.html"]', 'company-transactions.html');
+  addParams('a[href$="company-withdraw.html"]', 'company-withdraw.html');
+}

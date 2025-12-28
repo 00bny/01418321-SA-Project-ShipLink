@@ -1,0 +1,52 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    container_name: shiplink_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: shiplink_root_pw
+      MYSQL_DATABASE: shiplink_db
+      MYSQL_USER: shiplink
+      MYSQL_PASSWORD: shiplink_pw
+    command: [
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_unicode_ci",
+      "--skip-character-set-client-handshake"
+    ]
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3307:3306"
+
+  adminer:
+    image: adminer
+    container_name: shiplink_adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  backend:
+    build: ./backend
+    container_name: shiplink_backend
+    restart: unless-stopped
+    environment:
+      PORT: 5002
+      DB_HOST: db
+      DB_USER: shiplink
+      DB_PASSWORD: shiplink_pw
+      DB_NAME: shiplink_db
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "5002:5002"
+    depends_on:
+      - db
+    command: npm run dev
+
+volumes:
+  mysql_data:

@@ -1,0 +1,290 @@
+import { ApiClient } from './modules/apiClient.js';
+import { initCompanyWalletDropdown, loadCompanyWalletBalance } from "./companyWalletUI.js";
+
+function getQuery(name){ return new URLSearchParams(window.location.search).get(name); }
+const COMPANY_ID = Number(getQuery("companyId") || 1);
+
+let tbody, modal, form;
+let allRequests = []; // เก็บข้อมูลทั้งหมด
+let currentStatus = 'all';
+
+// ✅ Map แสดงสถานะเป็นภาษาไทย
+const statusMap = {
+  RequestedPickup: 'รอเข้ารับ',
+  PickingUp: 'กำลังเข้ารับ',
+  PickedUp: 'เข้ารับสำเร็จ',
+  Rejected: 'ปฏิเสธคำเรียก',    
+};
+
+document.addEventListener('DOMContentLoaded', async () => {
+  patchSidebarLinks();
+
+  tbody = document.getElementById('company-pickup-body');
+  modal = document.getElementById('confirmModal');
+  form = document.getElementById('confirmForm');
+
+  await loadPickupRequests();
+  initFilters(); // ✅ เรียกใช้งานฟิลเตอร์
+
+  initCompanyWalletDropdown();
+  await loadCompanyWalletBalance();
+
+  document.getElementById('btnLogout')?.addEventListener('click', logout);
+
+  // ปุ่มยกเลิกใน modal
+  document.getElementById('btnCancel').addEventListener('click', () => {
+    modal.classList.add('hidden');
+  });
+
+  // ✅ ยืนยันคำเรียก
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const id = document.getElementById('requestId').value;
+    const time = document.getElementById('pickupTime').value;
+    const name = document.getElementById('staffName').value.trim();
+    const phone = document.getElementById('staffPhone').value.trim();
+
+    if (!time || !name || !phone) {
+      alert('⚠️ โปรดกรอกข้อมูลให้ครบถ้วน');
+      return;
+    }
+
+    // ✅ ตรวจสอบรูปแบบเบอร์โทร (ต้องเป็นตัวเลข 10 หลัก)
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(phone)) {
+      alert('❌ เบอร์โทรไม่ถูกต้อง\nกรุณากรอกเฉพาะตัวเลข 10 หลัก');
+      return;
+    }
+
+    try {
+      const res = await ApiClient.confirmPickup({ requestId: id, time, name, phone });
+      alert('✅ ' + res.message);
+      modal.classList.add('hidden');
+      await loadPickupRequests(); // โหลดใหม่หลังอัปเดต
+    } catch (err) {
+      alert('❌ ' + (err.message || 'ไม่สามารถบันทึกได้'));
+    }
+  });
+});
+
+// เพิ่ม helper ด้านบนไฟล์ หรือเหนือ loadPickupRequests()
+function formatDateTimeLocal(value) {
+  if (!value) return '-';
+  let s = String(value).trim();
+
+  // รองรับทั้ง 'YYYY-MM-DD HH:mm:ss' และ 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  s = s.replace('T', ' ').replace('Z', '');
+  if (s.includes('.')) s = s.split('.')[0];
+
+  const [datePart, timePart] = s.split(' ');
+  if (!datePart || !timePart) return s;
+
+  const [y, m, d] = datePart.split('-');
+  const [hh, mm] = timePart.split(':');
+
+  // ใช้ปีคริสต์ศักราชตามที่ต้องการ
+  return `${d}/${m}/${y} ${hh}:${mm}`;
+}
+
+async function loadPickupRequests() {
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-gray-400">กำลังโหลด...</td></tr>`;
+
+  try {
+    const list = await ApiClient.getCompanyPickups(COMPANY_ID);
+    allRequests = list; // ✅ เก็บไว้ทั้งหมด
+    renderFilteredRequests();
+  } catch (err) {
+    console.error('❌ โหลดข้อมูลไม่สำเร็จ:', err);
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-red-500">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>`;
+  }
+}
+
+// ✅ ฟังก์ชันกรองข้อมูล
+function initFilters() {
+  const searchInput = document.getElementById('searchInput');
+  const dropdownBtn = document.getElementById('statusDropdownBtn');
+  const dropdownMenu = document.getElementById('statusMenu');
+  const statusLabel = document.getElementById('statusLabel');
+
+  // toggle dropdown
+  dropdownBtn.addEventListener('click', () => {
+    dropdownMenu.classList.toggle('hidden');
+  });
+
+  // click เลือกสถานะ
+  dropdownMenu.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      currentStatus = a.dataset.status;  // ✅ filter ด้วย key ภาษาอังกฤษ
+      statusLabel.textContent = a.textContent; // ✅ แสดงเป็นภาษาไทย
+      dropdownMenu.classList.add('hidden');
+      renderFilteredRequests();
+    });
+  });
+
+  // search input
+  searchInput.addEventListener('input', () => renderFilteredRequests());
+}
+
+function renderFilteredRequests() {
+  const searchValue = document.getElementById('searchInput').value.trim().toLowerCase();
+  let filtered = allRequests.filter(r => {
+    const matchStatus = currentStatus === 'all' || r.RequestStatus === currentStatus;
+    const matchSearch = !searchValue || String(r.RequestID).toLowerCase().includes(searchValue);
+    return matchStatus && matchSearch;
+  });
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-gray-400">ไม่พบข้อมูล</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(r => {
+    let actionBtn = '';
+
+if (r.RequestStatus === 'RequestedPickup') {
+  actionBtn = `
+    <div class="flex items-center justify-center space-x-3">
+      <!-- Accept -->
+      <button 
+        class="flex flex-col items-center bg-green-600 hover:bg-green-700 text-white font-medium 
+               text-xs px-3 py-2 rounded-2xl shadow-sm btn-assign"
+        data-id="${r.RequestID}" data-status="${r.RequestStatus}">
+        <span class="text-sm font-semibold">ยอมรับ</span>
+        <span class="text-sm font-semibold">คำเรียก</span>
+      </button>
+
+      <!-- Reject -->
+      <button
+        class="flex flex-col items-center bg-red-600 hover:bg-red-700 text-white font-medium 
+               text-xs px-3 py-2 rounded-2xl shadow-sm btn-reject"
+        data-id="${r.RequestID}">
+        <span class="text-sm font-semibold">ปฏิเสธ</span>
+        <span class="text-sm font-semibold">คำเรียก</span>
+      </button>
+    </div>`;
+
+
+    } else if (r.RequestStatus === 'PickingUp') {
+      actionBtn = `
+        <button
+          class="bg-green-600 hover:bg-green-700 text-white font-medium text-sm px-4 py-1.5 rounded btn-complete"
+          data-id="${r.RequestID}">
+          ยืนยันเข้ารับแล้ว
+        </button>`;
+    } else if (r.RequestStatus === 'PickedUp') {
+    actionBtn = `<span class="text-green-600 font-semibold">ยืนยันการเข้ารับแล้วเรียบร้อย</span>`;
+    } else {
+      actionBtn = `<span class="text-red-600 font-semibold">ปฏิเสธการเข้ารับแล้วเรียบร้อย</span>`;
+    }
+
+    return `
+      <tr class="border-b">
+        <td class="py-2 border">${r.RequestID}</td>
+        <td class="py-2 border">${formatDateTimeLocal(r.CreatedDate)}</td>
+        <td class="py-2 border">${r.BranchName || '-'}</td>
+        <td class="py-2 border">${r.ParcelCount ?? 0}</td>
+        <td class="py-2 border text-center">${statusMap[r.RequestStatus] || '-'}</td>
+        <td class="py-2 border">${actionBtn}</td>
+      </tr>`;
+  }).join('');
+
+  // ✅ ปุ่มยอมรับคำเรียก (เปิด modal)
+  document.querySelectorAll('.btn-assign').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const requestId = btn.dataset.id;
+      openModal(requestId);
+    });
+  });
+
+  document.querySelectorAll('.btn-complete').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const requestId = btn.dataset.id;
+        if (!confirm('ยืนยันว่าพนักงานได้เข้ารับพัสดุแล้วใช่ไหม')) return;
+
+        // ✅ Optimistic UI: ปรับใน allRequests ก่อนเพื่อให้ปุ่มหายทันที
+        const idx = allRequests.findIndex(r => String(r.RequestID) === String(requestId));
+        if (idx !== -1) {
+        allRequests[idx].RequestStatus = 'PickedUp';
+        renderFilteredRequests();
+        }
+
+        try {
+        const res = await ApiClient.completePickup(requestId);
+        alert('✅ ' + res.message);
+
+        // ✅ sync กับข้อมูลจริงอีกที (กัน edge case)
+        await loadPickupRequests();
+        } catch (err) {
+        alert('❌ ' + (err.message || 'ไม่สามารถอัปเดตได้'));
+        // rollback ถ้า backend fail
+        if (idx !== -1) {
+            allRequests[idx].RequestStatus = 'PickingUp';
+            renderFilteredRequests();
+        }}
+    });
+  });
+
+  // ✅ ปุ่มปฏิเสธคำเรียก
+  document.querySelectorAll('.btn-reject').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const requestId = btn.dataset.id;
+      const ok = confirm('คุณต้องการปฏิเสธคำเรียกนี้ใช่หรือไม่?');
+      if (!ok) return;
+
+      // Optimistic UI: เปลี่ยนสถานะชั่วคราว
+      const idx = allRequests.findIndex(r => String(r.RequestID) === String(requestId));
+      const prev = idx !== -1 ? allRequests[idx].RequestStatus : null;
+      if (idx !== -1) {
+        allRequests[idx].RequestStatus = 'Rejected';
+        renderFilteredRequests();
+      }
+
+      try {
+        const res = await ApiClient.rejectPickup(requestId);
+        alert('✅ ' + res.message);
+        await loadPickupRequests(); // sync ข้อมูลจริง
+      } catch (err) {
+        alert('❌ ' + (err.message || 'ไม่สามารถปฏิเสธคำเรียกได้'));
+        // rollback ถ้า backend fail
+        if (idx !== -1 && prev) {
+          allRequests[idx].RequestStatus = prev;
+          renderFilteredRequests();
+        }
+      }
+    });
+  });
+ 
+}
+
+function openModal(requestId) {
+  document.getElementById('requestId').value = requestId;
+  document.getElementById('pickupTime').value = '';
+  document.getElementById('staffName').value = '';
+  document.getElementById('staffPhone').value = '';
+  modal.classList.remove('hidden');
+}
+
+function logout(){
+  if (!confirm('ออกจากระบบ?')) return;
+  window.location.href = '../pages/login.html';
+}
+
+function patchSidebarLinks(){
+  const addParams = (sel, file) => {
+    const a = document.querySelector(sel);
+    if (!a) return;
+    const url = new URL(`../pages/${file}`, window.location.href);
+    url.searchParams.set("companyId", String(COMPANY_ID));
+    a.href = url.toString();
+  };
+
+  addParams('a[href$="company-dashboard.html"]', 'company-dashboard.html');
+  addParams('a[href$="company-delivery.html"]', 'company-delivery.html');
+  addParams('a[href$="company-pickup.html"]', 'company-pickup.html');
+  addParams('a[href$="company-return.html"]', 'company-return.html');
+  addParams('a[href$="company-transactions.html"]', 'company-transactions.html');
+  addParams('a[href$="company-withdraw.html"]', 'company-withdraw.html');
+}
